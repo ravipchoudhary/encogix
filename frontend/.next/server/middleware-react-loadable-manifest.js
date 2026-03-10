@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app\\\\contact\\\\page.tsx -> ../../components/OfficeMap\":{\"id\":\"app\\\\contact\\\\page.tsx -> ../../components/OfficeMap\",\"files\":[\"static/chunks/_app-pages-browser_components_OfficeMap_tsx.js\"]},\"components\\\\OfficeMap.tsx -> leaflet\":{\"id\":\"components\\\\OfficeMap.tsx -> leaflet\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_leaflet_dist_leaflet-src_js.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"

@@ -79,6 +79,9 @@ function initDb() {
     console.log('Default admin: username=' + u + ', password=' + p);
   }
   try { db.run('ALTER TABLE blogs ADD COLUMN image TEXT'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE internship_applications ADD COLUMN college TEXT'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE internship_applications ADD COLUMN course TEXT'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE admins ADD COLUMN active INTEGER DEFAULT 1'); saveDb(); } catch (_) {}
 }
 
 function authMiddleware(req, res, next) {
@@ -156,10 +159,10 @@ async function main() {
   });
 
   server.post('/api/jobs/apply', upload.single('resume'), (req, res) => {
-    const { name, email, phone, message } = req.body;
+    const { name, email, phone, current_company, current_salary, expected_salary, experience, notice_period, message } = req.body;
     const resumePath = req.file ? '/uploads/' + req.file.filename : null;
     try {
-      dbRun('INSERT INTO job_applications (name, email, phone, resume, message) VALUES (?, ?, ?, ?, ?)', [name, email, phone, resumePath, message]);
+      dbRun('INSERT INTO job_applications (name, email, phone, current_company, current_salary, expected_salary, experience, notice_period, resume, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [name || '', email || '', phone || '', current_company || '', current_salary || '', expected_salary || '', experience || '', notice_period || '', resumePath, message || '']);
       res.status(201).json({ message: 'Application submitted successfully' });
     } catch (e) {
       res.status(500).json({ message: 'Failed to submit application' });
@@ -167,10 +170,10 @@ async function main() {
   });
 
   server.post('/api/internships/apply', upload.single('resume'), (req, res) => {
-    const { name, email, phone, internship_type, message } = req.body;
+    const { name, email, phone, internship_type, college, course, message } = req.body;
     const resumePath = req.file ? '/uploads/' + req.file.filename : null;
     try {
-      dbRun('INSERT INTO internship_applications (name, email, phone, internship_type, resume, message) VALUES (?, ?, ?, ?, ?, ?)', [name, email, phone, internship_type, resumePath, message]);
+      dbRun('INSERT INTO internship_applications (name, email, phone, internship_type, college, course, resume, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, email, phone, internship_type || '', college || '', course || '', resumePath, message || '']);
       res.status(201).json({ message: 'Internship application submitted successfully' });
     } catch (e) {
       res.status(500).json({ message: 'Failed to submit internship application' });
@@ -203,10 +206,70 @@ async function main() {
     try {
       const admin = dbGet('SELECT * FROM admins WHERE username = ?', [username]);
       if (!admin || !bcrypt.compareSync(password, admin.password)) return res.status(401).json({ message: 'Invalid credentials' });
+      if (admin.active === 0) return res.status(401).json({ message: 'Account is blocked' });
       const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '8h' });
       res.json({ token });
     } catch (e) {
       res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  server.post('/api/admin/create-admin', authMiddleware, (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password || username.trim().length < 3 || password.length < 6) {
+      return res.status(400).json({ message: 'Username (min 3 chars) and password (min 6 chars) required' });
+    }
+    try {
+      const exists = dbGet('SELECT 1 FROM admins WHERE username = ?', [username.trim()]);
+      if (exists) return res.status(400).json({ message: 'Username already exists' });
+      const hash = bcrypt.hashSync(password, 10);
+      dbRun('INSERT INTO admins (username, password, active) VALUES (?, ?, 1)', [username.trim(), hash]);
+      res.status(201).json({ message: 'Admin created successfully' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to create admin' });
+    }
+  });
+
+  server.get('/api/admin/list-admins', authMiddleware, (req, res) => {
+    try {
+      res.json(dbAll('SELECT id, username, active FROM admins ORDER BY id'));
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch admins' });
+    }
+  });
+  server.put('/api/admin/admins/:id/block', authMiddleware, (req, res) => {
+    try {
+      dbRun('UPDATE admins SET active = 0 WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Admin blocked' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to block admin' });
+    }
+  });
+  server.put('/api/admin/admins/:id/unblock', authMiddleware, (req, res) => {
+    try {
+      dbRun('UPDATE admins SET active = 1 WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Admin unblocked' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to unblock admin' });
+    }
+  });
+  server.delete('/api/admin/admins/:id', authMiddleware, (req, res) => {
+    try {
+      dbRun('DELETE FROM admins WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Admin deleted' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to delete admin' });
+    }
+  });
+  server.put('/api/admin/admins/:id/change-password', authMiddleware, (req, res) => {
+    const { password } = req.body;
+    if (!password || password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    try {
+      const hash = bcrypt.hashSync(password, 10);
+      dbRun('UPDATE admins SET password = ? WHERE id = ?', [hash, req.params.id]);
+      res.json({ message: 'Password updated' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to update password' });
     }
   });
 

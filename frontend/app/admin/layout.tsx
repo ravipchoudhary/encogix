@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard" },
+  { href: "/admin/leads", label: "Leads" },
+  { href: "/admin/job-applications", label: "Job Applications" },
+  { href: "/admin/internship-applications", label: "Internship Applications" },
   { href: "/admin/jobs", label: "Jobs" },
   { href: "/admin/blogs", label: "Blogs" },
   { href: "/admin/projects", label: "Projects" },
+  { href: "/admin/admins", label: "Manage Admins" },
 ];
 
 export default function AdminLayout({
@@ -18,15 +22,31 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    if (pathname === "/admin/login") return;
+    if (pathname === "/admin/login") {
+      setAuthReady(true);
+      return;
+    }
     const token = localStorage.getItem("admin_token");
-    if (!token) router.push("/admin/login");
+    if (!token) {
+      router.replace("/admin/login");
+      return;
+    }
+    setAuthReady(true);
   }, [pathname, router]);
 
   if (pathname === "/admin/login") {
     return <>{children}</>;
+  }
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-slate-500">Loading…</p>
+      </div>
+    );
   }
 
   return (

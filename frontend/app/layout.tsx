@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description:
     "Encogix Technology is a global technology company delivering software development, cloud solutions, and digital innovation for enterprises.",
   metadataBase: new URL("https://www.encogix.example"), // adjust when deploying
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({
