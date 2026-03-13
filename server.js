@@ -70,6 +70,11 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS job_applications (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, phone TEXT, resume TEXT, message TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS internship_applications (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, phone TEXT, internship_type TEXT, resume TEXT, message TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS chatbot_settings (id INTEGER PRIMARY KEY CHECK (id = 1), data TEXT);
+    CREATE TABLE IF NOT EXISTS employees (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id TEXT UNIQUE NOT NULL, name TEXT NOT NULL, email TEXT, phone TEXT, designation TEXT, password TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id INTEGER NOT NULL, date TEXT NOT NULL, punch_in TEXT, punch_out TEXT, UNIQUE(employee_id, date));
+    CREATE TABLE IF NOT EXISTS leave_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id INTEGER NOT NULL, from_date TEXT, to_date TEXT, reason TEXT, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, message TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
   `);
   const row = dbGet('SELECT COUNT(*) as count FROM admins');
   if (row && row.count === 0) {
@@ -82,6 +87,12 @@ function initDb() {
   try { db.run('ALTER TABLE internship_applications ADD COLUMN college TEXT'); saveDb(); } catch (_) {}
   try { db.run('ALTER TABLE internship_applications ADD COLUMN course TEXT'); saveDb(); } catch (_) {}
   try { db.run('ALTER TABLE admins ADD COLUMN active INTEGER DEFAULT 1'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE employees ADD COLUMN dob TEXT'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE employees ADD COLUMN join_date TEXT'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE employees ADD COLUMN username TEXT'); saveDb(); } catch (_) {}
+  try { db.run('CREATE TABLE IF NOT EXISTS greetings (id INTEGER PRIMARY KEY AUTOINCREMENT, from_employee_id INTEGER NOT NULL, to_employee_id INTEGER NOT NULL, occasion TEXT, message TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN punch_in_location TEXT'); saveDb(); } catch (_) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN punch_out_location TEXT'); saveDb(); } catch (_) {}
 }
 
 function authMiddleware(req, res, next) {
@@ -91,6 +102,21 @@ function authMiddleware(req, res, next) {
   if (!token) return res.status(401).json({ message: 'Invalid Authorization header' });
   try {
     req.admin = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+}
+
+function employeeAuthMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ message: 'Missing Authorization header' });
+  const token = auth.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Invalid Authorization header' });
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (payload.type !== 'employee') return res.status(401).json({ message: 'Invalid token' });
+    req.employee = payload;
     next();
   } catch {
     return res.status(401).json({ message: 'Invalid or expired token' });
@@ -407,6 +433,287 @@ async function main() {
       res.status(500).json({ message: 'Failed to fetch chatbot settings' });
     }
   });
+  server.post('/api/employee/login', (req, res) => {
+    const { employee_id, password } = req.body;
+    if (!employee_id || !password) return res.status(400).json({ message: 'Employee ID and password required' });
+    try {
+      const emp = dbGet('SELECT * FROM employees WHERE employee_id = ?', [employee_id.trim()]);
+      if (!emp || !bcrypt.compareSync(password, emp.password)) return res.status(401).json({ message: 'Invalid credentials' });
+      const token = jwt.sign({ id: emp.id, employee_id: emp.employee_id, type: 'employee' }, JWT_SECRET, { expiresIn: '12h' });
+      res.json({ token, employee: { id: emp.id, employee_id: emp.employee_id, name: emp.name, designation: emp.designation } });
+    } catch (e) {
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+  server.post('/api/employee/punch-in', employeeAuthMiddleware, (req, res) => {
+    try {
+      const empId = req.employee.id;
+      const date = new Date().toISOString().split('T')[0];
+      const now = new Date().toISOString();
+      const loc = (req.body?.latitude != null && req.body?.longitude != null)
+        ? `${req.body.latitude},${req.body.longitude}` : null;
+      const row = dbGet('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [empId, date]);
+      if (row && row.punch_in) return res.status(400).json({ message: 'Already punched in today' });
+      if (row) dbRun('UPDATE attendance SET punch_in = ?, punch_in_location = ? WHERE employee_id = ? AND date = ?', [now, loc, empId, date]);
+      else dbRun('INSERT INTO attendance (employee_id, date, punch_in, punch_in_location) VALUES (?, ?, ?, ?)', [empId, date, now, loc]);
+      res.json({ message: 'Punched in', punch_in: now, punch_in_location: loc });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to punch in' });
+    }
+  });
+  server.post('/api/employee/punch-out', employeeAuthMiddleware, (req, res) => {
+    try {
+      const empId = req.employee.id;
+      const date = new Date().toISOString().split('T')[0];
+      const now = new Date().toISOString();
+      const loc = (req.body?.latitude != null && req.body?.longitude != null)
+        ? `${req.body.latitude},${req.body.longitude}` : null;
+      const row = dbGet('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [empId, date]);
+      if (!row || !row.punch_in) return res.status(400).json({ message: 'Punch in first' });
+      if (row.punch_out) return res.status(400).json({ message: 'Already punched out today' });
+      dbRun('UPDATE attendance SET punch_out = ?, punch_out_location = ? WHERE employee_id = ? AND date = ?', [now, loc, empId, date]);
+      res.json({ message: 'Punched out', punch_out: now, punch_out_location: loc });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to punch out' });
+    }
+  });
+  server.get('/api/employee/today', employeeAuthMiddleware, (req, res) => {
+    try {
+      const date = new Date().toISOString().split('T')[0];
+      const row = dbGet('SELECT * FROM attendance WHERE employee_id = ? AND date = ?', [req.employee.id, date]);
+      res.json(row || { punch_in: null, punch_out: null });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch' });
+    }
+  });
+  server.get('/api/employee/attendance', employeeAuthMiddleware, (req, res) => {
+    try {
+      const rows = dbAll('SELECT * FROM attendance WHERE employee_id = ? ORDER BY date DESC LIMIT 30', [req.employee.id]);
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch attendance' });
+    }
+  });
+  server.get('/api/employee/profile', employeeAuthMiddleware, (req, res) => {
+    try {
+      const emp = dbGet('SELECT id, employee_id, name, username, email, phone, designation, dob, join_date, created_at FROM employees WHERE id = ?', [req.employee.id]);
+      if (!emp) return res.status(404).json({ message: 'Not found' });
+      res.json(emp);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch profile' });
+    }
+  });
+  server.put('/api/employee/profile', employeeAuthMiddleware, (req, res) => {
+    const { username, email, phone, dob } = req.body;
+    try {
+      dbRun('UPDATE employees SET username = ?, email = ?, phone = ?, dob = ? WHERE id = ?', [username || null, email || '', phone || '', dob || null, req.employee.id]);
+      res.json({ message: 'Profile updated' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to update' });
+    }
+  });
+  server.get('/api/employee/celebrations', employeeAuthMiddleware, (req, res) => {
+    try {
+      const today = new Date();
+      const mmdd = (m, d) => String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      const todayStr = mmdd(today.getMonth() + 1, today.getDate());
+      const all = dbAll('SELECT id, employee_id, name, dob, join_date FROM employees WHERE dob IS NOT NULL OR join_date IS NOT NULL');
+      const birthdays = all.filter((e) => e.dob && e.dob.length >= 10 && e.dob.slice(5, 10) === todayStr);
+      const anniversaries = all.filter((e) => e.join_date && e.join_date.length >= 10 && e.join_date.slice(5, 10) === todayStr);
+      const upcomingBdays = [];
+      const upcomingAnniv = [];
+      for (let i = 1; i <= 7; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        const str = mmdd(d.getMonth() + 1, d.getDate());
+        all.filter((e) => e.dob && e.dob.length >= 10 && e.dob.slice(5, 10) === str).forEach((e) => upcomingBdays.push({ ...e, date: str, daysAway: i }));
+        all.filter((e) => e.join_date && e.join_date.length >= 10 && e.join_date.slice(5, 10) === str).forEach((e) => upcomingAnniv.push({ ...e, date: str, daysAway: i }));
+      }
+      res.json({ birthdays, anniversaries, upcoming: { birthdays: upcomingBdays, anniversaries: upcomingAnniv } });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.get('/api/employee/greetings', employeeAuthMiddleware, (req, res) => {
+    try {
+      let toId = req.query.to;
+      if (toId === 'me') toId = req.employee.id;
+      let rows;
+      if (toId) rows = dbAll('SELECT g.*, e.name as from_name FROM greetings g JOIN employees e ON g.from_employee_id = e.id WHERE g.to_employee_id = ? ORDER BY g.created_at DESC LIMIT 50', [toId]);
+      else rows = dbAll('SELECT g.*, e1.name as from_name, e2.name as to_name FROM greetings g JOIN employees e1 ON g.from_employee_id = e1.id JOIN employees e2 ON g.to_employee_id = e2.id ORDER BY g.created_at DESC LIMIT 50');
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.post('/api/employee/greet', employeeAuthMiddleware, (req, res) => {
+    const { to_employee_id, occasion, message } = req.body;
+    if (!to_employee_id || !occasion) return res.status(400).json({ message: 'To employee and occasion required' });
+    try {
+      dbRun('INSERT INTO greetings (from_employee_id, to_employee_id, occasion, message) VALUES (?, ?, ?, ?)', [req.employee.id, to_employee_id, occasion, (message || '').substring(0, 500)]);
+      res.status(201).json({ id: dbLastId(), message: 'Greeting sent' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to send' });
+    }
+  });
+  server.get('/api/employee/leave', employeeAuthMiddleware, (req, res) => {
+    try {
+      const rows = dbAll('SELECT * FROM leave_requests WHERE employee_id = ? ORDER BY created_at DESC', [req.employee.id]);
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch leave' });
+    }
+  });
+  server.post('/api/employee/leave', employeeAuthMiddleware, (req, res) => {
+    const { from_date, to_date, reason } = req.body;
+    if (!from_date || !to_date) return res.status(400).json({ message: 'From date and to date required' });
+    try {
+      dbRun('INSERT INTO leave_requests (employee_id, from_date, to_date, reason, status) VALUES (?, ?, ?, ?, ?)', [req.employee.id, from_date, to_date, reason || '', 'pending']);
+      res.status(201).json({ id: dbLastId(), message: 'Leave request submitted' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to submit' });
+    }
+  });
+  server.get('/api/employee/announcements', employeeAuthMiddleware, (req, res) => {
+    try {
+      const rows = dbAll('SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50');
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch' });
+    }
+  });
+  server.get('/api/employee/chat', employeeAuthMiddleware, (req, res) => {
+    try {
+      const rows = dbAll('SELECT * FROM chat_messages ORDER BY created_at ASC LIMIT 100');
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch' });
+    }
+  });
+  server.post('/api/employee/chat', employeeAuthMiddleware, (req, res) => {
+    const { username, message } = req.body;
+    if (!username || !message || !username.trim()) return res.status(400).json({ message: 'Username and message required' });
+    try {
+      dbRun('INSERT INTO chat_messages (username, message) VALUES (?, ?)', [username.trim().substring(0, 50), String(message).trim().substring(0, 500)]);
+      res.status(201).json({ id: dbLastId(), message: 'Sent' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to send' });
+    }
+  });
+
+  server.get('/api/admin/employees', authMiddleware, (req, res) => {
+    try {
+      res.json(dbAll('SELECT id, employee_id, name, email, phone, designation, dob, join_date, created_at FROM employees ORDER BY id'));
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch employees' });
+    }
+  });
+  server.post('/api/admin/employees', authMiddleware, (req, res) => {
+    const { employee_id, name, email, phone, designation, password, dob, join_date } = req.body;
+    if (!employee_id || !name || !password) return res.status(400).json({ message: 'Employee ID, name and password required' });
+    if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    try {
+      const exists = dbGet('SELECT 1 FROM employees WHERE employee_id = ?', [employee_id.trim()]);
+      if (exists) return res.status(400).json({ message: 'Employee ID already exists' });
+      const hash = bcrypt.hashSync(password, 10);
+      dbRun('INSERT INTO employees (employee_id, name, email, phone, designation, password, dob, join_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [employee_id.trim(), name.trim(), email || '', phone || '', designation || '', hash, dob || null, join_date || null]);
+      res.status(201).json({ id: dbLastId(), message: 'Employee created' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to create employee' });
+    }
+  });
+  server.put('/api/admin/employees/:id', authMiddleware, (req, res) => {
+    const { name, email, phone, designation, password, dob, join_date } = req.body;
+    try {
+      const ex = dbGet('SELECT * FROM employees WHERE id = ?', [req.params.id]);
+      if (!ex) return res.status(404).json({ message: 'Employee not found' });
+      let sql = 'UPDATE employees SET name = ?, email = ?, phone = ?, designation = ?, dob = ?, join_date = ?';
+      const params = [name || ex.name, email || ex.email, phone || ex.phone, designation || ex.designation, dob !== undefined ? (dob || null) : ex.dob, join_date !== undefined ? (join_date || null) : ex.join_date];
+      if (password && password.length >= 6) {
+        sql += ', password = ?';
+        params.push(bcrypt.hashSync(password, 10));
+      }
+      sql += ' WHERE id = ?';
+      params.push(req.params.id);
+      dbRun(sql, params);
+      res.json({ message: 'Employee updated' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to update employee' });
+    }
+  });
+  server.delete('/api/admin/employees/:id', authMiddleware, (req, res) => {
+    try {
+      dbRun('DELETE FROM employees WHERE id = ?', [req.params.id]);
+      dbRun('DELETE FROM attendance WHERE employee_id = ?', [req.params.id]);
+      res.json({ message: 'Employee deleted' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to delete employee' });
+    }
+  });
+  server.get('/api/admin/announcements', authMiddleware, (req, res) => {
+    try {
+      res.json(dbAll('SELECT * FROM announcements ORDER BY created_at DESC'));
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.post('/api/admin/announcements', authMiddleware, (req, res) => {
+    const { title, content } = req.body;
+    if (!title) return res.status(400).json({ message: 'Title required' });
+    try {
+      dbRun('INSERT INTO announcements (title, content) VALUES (?, ?)', [title, content || '']);
+      res.status(201).json({ id: dbLastId() });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.delete('/api/admin/announcements/:id', authMiddleware, (req, res) => {
+    try {
+      dbRun('DELETE FROM announcements WHERE id = ?', [req.params.id]);
+      res.json({ message: 'Deleted' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.get('/api/admin/leave-requests', authMiddleware, (req, res) => {
+    try {
+      const rows = dbAll(`
+        SELECT l.*, e.employee_id, e.name, e.designation
+        FROM leave_requests l
+        JOIN employees e ON l.employee_id = e.id
+        ORDER BY l.created_at DESC
+      `);
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.put('/api/admin/leave-requests/:id', authMiddleware, (req, res) => {
+    const { status } = req.body;
+    if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
+    try {
+      dbRun('UPDATE leave_requests SET status = ? WHERE id = ?', [status, req.params.id]);
+      res.json({ message: 'Updated' });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed' });
+    }
+  });
+  server.get('/api/admin/attendance', authMiddleware, (req, res) => {
+    try {
+      const rows = dbAll(`
+        SELECT a.id, a.date, a.punch_in, a.punch_out, e.employee_id, e.name, e.designation
+        FROM attendance a
+        JOIN employees e ON a.employee_id = e.id
+        ORDER BY a.date DESC, a.punch_in DESC
+        LIMIT 500
+      `);
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch attendance' });
+    }
+  });
+
   server.post('/api/admin/chatbot-settings', authMiddleware, (req, res) => {
     try {
       const data = JSON.stringify(req.body || {});

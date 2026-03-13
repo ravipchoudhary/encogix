@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { IconMail, IconPhone, IconMapPin, IconSend } from "../../components/Icons";
 
 const OfficeMap = dynamic(() => import("../../components/OfficeMap"), { ssr: false });
 
@@ -28,10 +29,10 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="section-padding">
+    <div className="section-padding section-modern">
       <div className="container-page">
-        <div className="mb-10">
-          <span className="chip mb-4 inline-block">Get in touch</span>
+        <div className="mb-10 page-hero-modern">
+          <span className="chip mb-4 inline-flex items-center gap-2"><IconMail className="w-4 h-4" /> Get in touch</span>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
             Contact Us
           </h1>
@@ -43,10 +44,12 @@ export default function ContactPage() {
 
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="space-y-6">
-            <div className="card">
-              <h2 className="text-lg font-semibold text-primary mb-4">Contact Information</h2>
+            <div className="card card-3d block-3d">
+              <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2"><IconPhone className="w-5 h-5 text-secondary" /> Contact Information</h2>
               <div className="space-y-4">
-                <div>
+                <div className="flex items-start gap-3">
+                  <IconMail className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                  <div>
                   <p className="text-sm font-medium text-slate-700">Email</p>
                   <a href="mailto:contact@encogix.com" className="text-secondary hover:underline">
                     contact@encogix.com
@@ -58,8 +61,11 @@ export default function ContactPage() {
                     <a href="tel:+919431607346" className="text-secondary hover:underline">+91 9431607346</a>
                     <a href="tel:+917633926879" className="text-secondary hover:underline">+91 7633926879</a>
                   </div>
+                  </div>
                 </div>
-                <div>
+                <div className="flex items-start gap-3">
+                  <IconMapPin className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                  <div>
                   <p className="text-sm font-medium text-slate-700 mb-2">Noida Office</p>
                   <p className="text-slate-600 text-sm">
                     Gaur City Center, Greater Noida, Uttar Pradesh, 201318
@@ -86,6 +92,7 @@ export default function ContactPage() {
                   >
                     View on Map →
                   </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -94,7 +101,7 @@ export default function ContactPage() {
           </div>
 
           <div>
-            <div className="card-flat">
+            <div className="card-flat card-flat-3d glass-card">
               <h2 className="text-lg font-semibold text-primary mb-4">Send us a Message</h2>
               <p className="text-sm text-slate-600 mb-4">
                 Fill out your details and we will get back to you as soon as possible.
@@ -141,8 +148,8 @@ export default function ContactPage() {
                     placeholder="How can we help you?"
                   />
                 </div>
-                <button type="submit" disabled={status === "sending"} className="btn-primary w-full">
-                  {status === "sending" ? "Sending…" : "Send Message"}
+                <button type="submit" disabled={status === "sending"} className="btn-primary w-full inline-flex items-center justify-center gap-2">
+                  {status === "sending" ? "Sending…" : <>Send Message <IconSend className="w-4 h-4" /></>}
                 </button>
                 {status === "ok" && (
                   <p className="text-green-600 text-sm">Thank you! We&apos;ll get back to you soon.</p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconFileText, IconArrowRight } from "../../components/Icons";
 
 async function getBlogs() {
   try {
@@ -13,11 +14,12 @@ export default async function BlogPage() {
   const blogs = await getBlogs();
 
   return (
-    <div className="section-padding">
+    <div className="section-padding section-modern">
       <div className="container-page space-y-10">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-semibold text-primary">
-            Blog
+        <div className="page-hero-modern">
+          <span className="chip mb-4 inline-flex items-center gap-2"><IconFileText className="w-4 h-4" /> Insights</span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-primary flex items-center gap-2">
+            <IconFileText className="w-8 h-8 text-secondary" /> Blog
           </h1>
           <p className="mt-4 text-slate-600 max-w-2xl">
             Insights on technology, digital transformation, and industry trends.
@@ -43,7 +45,8 @@ export default async function BlogPage() {
             ))}
           </div>
         ) : (
-          <div className="card text-center py-16 text-slate-500">
+          <div className="card card-3d block-3d text-center py-16 text-slate-500">
+            <IconFileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p>No blog posts yet. Check back soon.</p>
           </div>
         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const SERVICE_DETAILS: Record<string, string> = {
   "Software Development":
@@ -31,6 +32,7 @@ interface ChatMessage {
 }
 
 export default function ChatbotWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [autoOpened, setAutoOpened] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -130,6 +132,9 @@ export default function ChatbotWidget() {
       handleSend();
     }
   };
+
+  if (pathname?.startsWith("/employee")) return null;
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>

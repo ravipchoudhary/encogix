@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -21,12 +22,16 @@ const navItems = [
 ];
 
 export default function Header() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
+  if (pathname?.startsWith("/employee") && pathname !== "/employee/login") return null;
+  if (pathname?.startsWith("/admin") && pathname !== "/admin/login") return null;
+
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur-md shadow-soft">
+    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur-xl shadow-sm">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <img

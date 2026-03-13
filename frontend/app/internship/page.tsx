@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { IconGraduationCap, IconSend } from "../../components/Icons";
 
 const areasOfInterest = [
   { id: "web", label: "Web Development" },
@@ -68,11 +69,12 @@ export default function InternshipPage() {
   };
 
   return (
-    <div className="section-padding">
+    <div className="section-padding section-modern">
       <div className="container-page max-w-4xl space-y-10">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-semibold text-primary">
-            Internship Programs
+        <div className="page-hero-modern">
+          <span className="chip mb-4 inline-flex items-center gap-2"><IconGraduationCap className="w-4 h-4" /> Learn & Grow</span>
+          <h1 className="text-3xl sm:text-4xl font-bold text-primary flex items-center gap-2">
+            <IconGraduationCap className="w-8 h-8 text-secondary" /> Internship Programs
           </h1>
           <p className="mt-4 text-slate-600">
             Gain hands-on experience with Encogix. We offer internships in Web Development, Software Development, Android, UI Design, Data Science, Machine Learning, Digital Marketing, HR, and more.
@@ -88,8 +90,8 @@ export default function InternshipPage() {
           ))}
         </div>
 
-        <div className="card-flat">
-          <h2 className="text-xl font-semibold text-primary mb-4">Apply for an internship</h2>
+        <div className="card-flat card-flat-3d glass-card block-3d">
+          <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2"><IconSend className="w-6 h-6 text-secondary" /> Apply for an internship</h2>
           <form onSubmit={submit} className="form-group">
             <div>
               <label className="label-field">Name *</label>

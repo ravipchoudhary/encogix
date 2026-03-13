@@ -35,8 +35,8 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <div className="card-flat w-full max-w-sm">
+    <div className="min-h-[60vh] flex items-center justify-center px-4 section-modern">
+      <div className="card-flat card-flat-3d glass-card w-full max-w-sm">
         <h1 className="text-xl font-semibold text-primary mb-4">Admin Login</h1>
         <form onSubmit={submit} className="form-group">
           <div>

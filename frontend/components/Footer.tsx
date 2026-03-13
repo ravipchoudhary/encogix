@@ -1,10 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+  if (pathname?.startsWith("/employee") && pathname !== "/employee/login") return null;
+  if (pathname?.startsWith("/admin") && pathname !== "/admin/login") return null;
 
   return (
-    <footer className="border-t border-slate-200/50 bg-gradient-to-br from-primary via-primary to-blue-900 text-white">
+    <footer className="border-t border-slate-200/50 bg-gradient-to-br from-primary via-blue-900 to-primary text-white">
       <div className="container-page py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -31,6 +37,7 @@ export default function Footer() {
               <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
               <li><Link href="/career" className="hover:text-white transition">Career</Link></li>
               <li><Link href="/contact" className="hover:text-white transition">Contact</Link></li>
+              <li><Link href="/employee/login" className="hover:text-white transition">Employee Login</Link></li>
             </ul>
           </div>
 

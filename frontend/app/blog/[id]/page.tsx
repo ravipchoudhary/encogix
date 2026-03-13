@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconFileText, IconArrowRight } from "../../../components/Icons";
 
 async function getBlog(id: string) {
   try {
@@ -30,9 +31,9 @@ export default async function BlogDetailPage({
 
   if (!blog) {
     return (
-      <div className="section-padding container-page">
+      <div className="section-padding section-modern container-page">
         <p className="text-slate-500">Blog post not found.</p>
-        <Link href="/blog" className="text-secondary text-sm mt-2 inline-block">← Back to blog</Link>
+        <Link href="/blog" className="text-secondary text-sm mt-2 inline-flex items-center gap-1"><IconArrowRight className="w-4 h-4 rotate-180" /> Back to blog</Link>
       </div>
     );
   }
@@ -42,7 +43,7 @@ export default async function BlogDetailPage({
       <div className="container-page max-w-3xl">
         <Link href="/blog" className="text-secondary text-sm mb-4 inline-block">← Back to blog</Link>
         {blog.image && (
-          <div className="w-full h-64 sm:h-80 rounded-xl overflow-hidden bg-slate-100 mb-6">
+          <div className="block-3d w-full h-64 sm:h-80 rounded-xl overflow-hidden bg-slate-100 mb-6 shadow-lg card-flat-3d">
             <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
           </div>
         )}

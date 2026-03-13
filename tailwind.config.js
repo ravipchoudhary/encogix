@@ -7,16 +7,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#0A2540",
-        secondary: "#2563EB",
-        accent: "#38BDF8",
-        background: "#F8FAFC"
+        primary: "#0f172a",
+        secondary: "#2563eb",
+        accent: "#38bdf8",
+        background: "#fafbff"
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"]
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"]
       },
       boxShadow: {
-        "soft": "0 4px 20px -2px rgb(0 0 0 / 0.08)",
+        "soft": "0 4px 24px -4px rgb(15 23 42 / 0.08)",
+        "card": "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 10px 20px -5px rgb(15 23 42 / 0.08)",
+        "card-hover": "0 20px 40px -10px rgb(15 23 42 / 0.15)",
         "glow": "0 0 40px -8px rgba(37, 99, 235, 0.4)",
       },
       animation: {

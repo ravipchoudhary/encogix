@@ -93,6 +93,12 @@ export default function AdminDashboardPage() {
             <Link href="/admin/internship-applications" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">
               Internship Applications
             </Link>
+            <Link href="/admin/employees" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">
+              Employees
+            </Link>
+            <Link href="/admin/attendance" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">
+              Attendance
+            </Link>
             <Link href="/admin/jobs" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">
               Jobs
             </Link>
@@ -102,6 +108,8 @@ export default function AdminDashboardPage() {
             <Link href="/admin/projects" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">
               Projects
             </Link>
+            <Link href="/admin/announcements" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">Announcements</Link>
+            <Link href="/admin/leave-requests" className="px-4 py-2 bg-secondary text-white rounded-lg text-sm font-medium hover:bg-blue-600">Leave Requests</Link>
             <Link href="/admin/admins" className="px-4 py-2 border-2 border-secondary text-secondary rounded-lg text-sm font-medium hover:bg-secondary hover:text-white">
               Manage Admins
             </Link>
