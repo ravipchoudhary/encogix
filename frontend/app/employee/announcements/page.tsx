@@ -14,7 +14,13 @@ export default function EmployeeAnnouncementsPage() {
 
   useEffect(() => {
     fetch("/api/employee/announcements", { headers: empAuthHeaders() })
-      .then((r) => (r.status === 401 ? router.replace("/employee/login") || [] : r.json()))
+      .then((r) => {
+        if (r.status === 401) {
+          router.replace("/employee/login");
+          return [] as { id: number; title: string; content: string; created_at: string }[];
+        }
+        return r.json();
+      })
       .then(setItems)
       .catch(() => [])
       .finally(() => setLoading(false));

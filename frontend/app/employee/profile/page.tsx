@@ -54,8 +54,8 @@ export default function EmployeeProfilePage() {
       .finally(() => setLoading(false));
 
     fetch("/api/employee/celebrations", { headers: empAuthHeaders() })
-      .then((r) => (r.ok ? r.json() : {}))
-      .then(setCelebrations)
+      .then((r) => (r.ok ? r.json() : { birthdays: [], anniversaries: [] }))
+      .then((data) => setCelebrations(data))
       .catch(() => {});
 
     fetch("/api/employee/greetings?to=me", { headers: empAuthHeaders() })

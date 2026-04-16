@@ -59,7 +59,7 @@ export default function Header() {
                 {dropdownOpen && (
                   <div className="absolute left-0 top-full pt-1">
                     <div className="rounded-xl border border-slate-100 bg-white shadow-lg py-1 min-w-[160px]">
-                      {item.children.map((c) => (
+                      {item.children?.map((c) => (
                         <Link key={c.href} href={c.href} className="block px-4 py-2 text-slate-600 hover:bg-slate-50 hover:text-secondary font-medium">
                           {c.label}
                         </Link>
@@ -100,7 +100,7 @@ export default function Header() {
                 </button>
                 {mobileDropdownOpen && (
                   <div className="pl-4 border-l-2 border-slate-100 space-y-1">
-                    {item.children.map((c) => (
+                    {item.children?.map((c) => (
                       <Link key={c.href} href={c.href} onClick={() => { setMobileOpen(false); setMobileDropdownOpen(false); }} className="block py-2 text-sm text-slate-600 hover:text-primary">
                         {c.label}
                       </Link>

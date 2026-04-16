@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import EmployeeChatPanel from "../../components/EmployeeChatPanel";
 
 const navItems = [
   { href: "/employee/dashboard", label: "Dashboard" },
@@ -11,13 +10,13 @@ const navItems = [
   { href: "/employee/profile", label: "My Profile" },
   { href: "/employee/leave", label: "Leave Request" },
   { href: "/employee/announcements", label: "Announcements" },
+  { href: "/employee/chat", label: "Chat" },
 ];
 
 export default function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -59,14 +58,6 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
                   {item.label}
                 </Link>
               ))}
-              <button
-                onClick={() => setChatOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 ml-2"
-                title="Live Chat"
-              >
-                <span className="w-5 h-5 flex items-center justify-center rounded bg-secondary/20 text-secondary">💬</span>
-                Live Chat
-              </button>
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
@@ -77,9 +68,9 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
             </div>
 
             <div className="md:hidden flex items-center gap-2">
-              <button onClick={() => setChatOpen(true)} className="p-2 rounded-lg hover:bg-slate-100" aria-label="Chat">
+              <Link href="/employee/chat" className="p-2 rounded-lg hover:bg-slate-100" aria-label="Chat">
                 <span className="text-xl">💬</span>
-              </button>
+              </Link>
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-slate-100" aria-label="Menu">
                 <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
@@ -95,9 +86,6 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
                   {item.label}
                 </Link>
               ))}
-              <button onClick={() => { setChatOpen(true); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-slate-600">
-                Live Chat
-              </button>
               <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm text-slate-600">← Back to site</Link>
               <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm font-medium text-red-700">
                 Logout
@@ -108,8 +96,6 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
       </header>
 
       <main className="flex-1">{children}</main>
-
-      <EmployeeChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }

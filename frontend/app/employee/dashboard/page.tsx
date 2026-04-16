@@ -104,7 +104,7 @@ export default function EmployeeDashboardPage() {
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-1">Welcome, {profile?.name || "Employee"}!</h1>
         {profile?.designation && <p className="text-slate-600">{profile.designation}</p>}
-        <p className="text-sm text-slate-500 mt-1">{new Date().toLocaleDateString("en-IN", { weekday: "long", date: "numeric", month: "long", year: "numeric" })}</p>
+        <p className="text-sm text-slate-500 mt-1">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3 mb-8">

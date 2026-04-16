@@ -15,7 +15,15 @@ export default function EmployeeAttendancePage() {
   const [loading, setLoading] = useState(true);
 
   const load = () => {
-    fetch("/api/employee/today", { headers: empAuthHeaders() }).then((r) => r.status === 401 ? router.replace("/employee/login") || null : r.json()).then(setToday);
+    fetch("/api/employee/today", { headers: empAuthHeaders() })
+      .then((r) => {
+        if (r.status === 401) {
+          router.replace("/employee/login");
+          return null;
+        }
+        return r.json();
+      })
+      .then(setToday);
     fetch("/api/employee/attendance", { headers: empAuthHeaders() })
       .then((r) => (r.status === 401 ? [] : r.json()))
       .then(setAttendance)
@@ -48,7 +56,7 @@ export default function EmployeeAttendancePage() {
       <h1 className="text-2xl font-semibold text-primary mb-6">Attendance</h1>
       <div className="card-flat mb-8 text-center py-8">
         <h2 className="text-lg font-semibold text-primary mb-2">Today</h2>
-        <p className="text-sm text-slate-500 mb-4">{new Date().toLocaleDateString("en-IN", { weekday: "long", date: "numeric", month: "long", year: "numeric" })}</p>
+        <p className="text-sm text-slate-500 mb-4">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
         <div className="flex flex-wrap justify-center gap-6 mb-6">
           <div className="px-6 py-3 rounded-xl bg-slate-100">
             <p className="text-xs text-slate-500">Punch In</p>

@@ -22,13 +22,26 @@ export default function AdminAnnouncementsPage() {
   const [form, setForm] = useState({ title: "", content: "" });
   const [saving, setSaving] = useState(false);
 
-  const load = () => {
-    fetch("/api/admin/announcements", { headers: authHeaders() })
-      .then((r) => (r.status === 401 ? router.push("/admin/login") || [] : r.json()))
-      .then(setItems)
-      .catch(() => [])
-      .finally(() => setLoading(false));
+  const load = async () => {
+    try {
+      const r = await fetch("/api/admin/announcements", {
+        headers: authHeaders(),
+      });
+  
+      if (r.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+  
+      const data = await r.json();
+      setItems(data);
+    } catch (err) {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   };
+  
 
   useEffect(() => {
     if (!localStorage.getItem("admin_token")) router.push("/admin/login");

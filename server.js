@@ -93,6 +93,9 @@ function initDb() {
   try { db.run('CREATE TABLE IF NOT EXISTS greetings (id INTEGER PRIMARY KEY AUTOINCREMENT, from_employee_id INTEGER NOT NULL, to_employee_id INTEGER NOT NULL, occasion TEXT, message TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)'); saveDb(); } catch (_) {}
   try { db.run('ALTER TABLE attendance ADD COLUMN punch_in_location TEXT'); saveDb(); } catch (_) {}
   try { db.run('ALTER TABLE attendance ADD COLUMN punch_out_location TEXT'); saveDb(); } catch (_) {}
+  try { db.run('CREATE TABLE IF NOT EXISTS conversations (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, name TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)'); saveDb(); } catch (_) {}
+  try { db.run('CREATE TABLE IF NOT EXISTS conversation_participants (id INTEGER PRIMARY KEY AUTOINCREMENT, conversation_id INTEGER NOT NULL, employee_id INTEGER NOT NULL, UNIQUE(conversation_id, employee_id))'); saveDb(); } catch (_) {}
+  try { db.run('CREATE TABLE IF NOT EXISTS conversation_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conversation_id INTEGER NOT NULL, from_employee_id INTEGER NOT NULL, message TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)'); saveDb(); } catch (_) {}
 }
 
 function authMiddleware(req, res, next) {
@@ -582,20 +585,111 @@ async function main() {
       res.status(500).json({ message: 'Failed to fetch' });
     }
   });
-  server.get('/api/employee/chat', employeeAuthMiddleware, (req, res) => {
+  server.get('/api/employee/chat/employees', employeeAuthMiddleware, (req, res) => {
     try {
-      const rows = dbAll('SELECT * FROM chat_messages ORDER BY created_at ASC LIMIT 100');
+      const me = req.employee.id;
+      const rows = dbAll('SELECT id, employee_id, name FROM employees WHERE id != ? ORDER BY name', [me]);
       res.json(rows);
     } catch (e) {
       res.status(500).json({ message: 'Failed to fetch' });
     }
   });
-  server.post('/api/employee/chat', employeeAuthMiddleware, (req, res) => {
-    const { username, message } = req.body;
-    if (!username || !message || !username.trim()) return res.status(400).json({ message: 'Username and message required' });
+  server.get('/api/employee/chat/conversations', employeeAuthMiddleware, (req, res) => {
     try {
-      dbRun('INSERT INTO chat_messages (username, message) VALUES (?, ?)', [username.trim().substring(0, 50), String(message).trim().substring(0, 500)]);
-      res.status(201).json({ id: dbLastId(), message: 'Sent' });
+      const me = req.employee.id;
+      const convos = dbAll(`
+        SELECT c.id, c.type, c.name, c.created_at,
+          (SELECT message FROM conversation_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
+          (SELECT created_at FROM conversation_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_at
+        FROM conversations c
+        INNER JOIN conversation_participants p ON p.conversation_id = c.id AND p.employee_id = ?
+        ORDER BY COALESCE((SELECT created_at FROM conversation_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1), c.created_at) DESC
+      `, [me]);
+      const out = [];
+      for (const c of convos) {
+        const participants = dbAll('SELECT p.employee_id, e.name FROM conversation_participants p JOIN employees e ON e.id = p.employee_id WHERE p.conversation_id = ?', [c.id]);
+        const other = participants.filter((p) => Number(p.employee_id) !== me);
+        out.push({
+          id: c.id,
+          type: c.type,
+          name: c.type === 'dm' && other[0] ? other[0].name : (c.name || 'Group'),
+          participants,
+          last_message: c.last_message,
+          last_at: c.last_at || c.created_at
+        });
+      }
+      res.json(out);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch' });
+    }
+  });
+  server.post('/api/employee/chat/conversations', employeeAuthMiddleware, (req, res) => {
+    const { type, other_employee_id, name, employee_ids } = req.body;
+    const me = req.employee.id;
+    try {
+      if (type === 'dm' && other_employee_id) {
+        const otherId = Number(other_employee_id);
+        if (!otherId) return res.status(400).json({ message: 'Invalid employee' });
+        const ids = [me, otherId].filter((v, i, a) => a.indexOf(v) === i);
+        if (ids.length < 2) return res.status(400).json({ message: 'Cannot start DM with yourself' });
+        const exists = dbGet(
+          'SELECT c.id FROM conversations c, conversation_participants p1, conversation_participants p2 WHERE c.type = ? AND c.id = p1.conversation_id AND p1.employee_id = ? AND c.id = p2.conversation_id AND p2.employee_id = ? AND p1.employee_id < p2.employee_id LIMIT 1',
+          ['dm', ids[0], ids[1]]
+        );
+        if (exists && exists.id) return res.json({ id: exists.id });
+        dbRun('INSERT INTO conversations (type) VALUES (?)', ['dm']);
+        const cid = dbLastId();
+        for (const eid of ids) dbRun('INSERT OR IGNORE INTO conversation_participants (conversation_id, employee_id) VALUES (?, ?)', [cid, eid]);
+        return res.status(201).json({ id: cid });
+      }
+      if (type === 'group' && name && Array.isArray(employee_ids) && employee_ids.length > 0) {
+        const ids = [me, ...employee_ids.map(Number)].filter((n, i, arr) => n && arr.indexOf(n) === i);
+        dbRun('INSERT INTO conversations (type, name) VALUES (?, ?)', ['group', String(name).trim().substring(0, 100)]);
+        const cid = dbLastId();
+        for (const eid of ids) {
+          dbRun('INSERT OR IGNORE INTO conversation_participants (conversation_id, employee_id) VALUES (?, ?)', [cid, eid]);
+        }
+        return res.status(201).json({ id: cid });
+      }
+      return res.status(400).json({ message: 'Invalid request' });
+    } catch (e) {
+      console.error('Error in /api/employee/chat/conversations:', e);
+      res.status(500).json({ message: e && e.message ? e.message : 'Failed to create' });
+    }
+  });
+  server.get('/api/employee/chat/conversations/:id', employeeAuthMiddleware, (req, res) => {
+    try {
+      const cid = Number(req.params.id);
+      const me = req.employee.id;
+      const member = dbGet('SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND employee_id = ?', [cid, me]);
+      if (!member) return res.status(403).json({ message: 'Not in conversation' });
+      const conv = dbGet('SELECT * FROM conversations WHERE id = ?', [cid]);
+      if (!conv) return res.status(404).json({ message: 'Not found' });
+      const participants = dbAll('SELECT p.employee_id, e.name FROM conversation_participants p JOIN employees e ON e.id = p.employee_id WHERE p.conversation_id = ?', [cid]);
+      const other = participants.filter((p) => Number(p.employee_id) !== me);
+      const messages = dbAll('SELECT m.id, m.from_employee_id, m.message, m.created_at, e.name as from_name FROM conversation_messages m JOIN employees e ON e.id = m.from_employee_id WHERE m.conversation_id = ? ORDER BY m.created_at ASC', [cid]);
+      res.json({
+        id: conv.id,
+        type: conv.type,
+        name: conv.type === 'dm' && other[0] ? other[0].name : (conv.name || 'Group'),
+        participants,
+        messages
+      });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch' });
+    }
+  });
+  server.post('/api/employee/chat/conversations/:id/messages', employeeAuthMiddleware, (req, res) => {
+    const { message } = req.body;
+    const cid = Number(req.params.id);
+    const me = req.employee.id;
+    if (!message || !String(message).trim()) return res.status(400).json({ message: 'Message required' });
+    try {
+      const member = dbGet('SELECT 1 FROM conversation_participants WHERE conversation_id = ? AND employee_id = ?', [cid, me]);
+      if (!member) return res.status(403).json({ message: 'Not in conversation' });
+      dbRun('INSERT INTO conversation_messages (conversation_id, from_employee_id, message) VALUES (?, ?, ?)', [cid, me, String(message).trim().substring(0, 2000)]);
+      const msg = { id: dbLastId(), from_employee_id: me, message: String(message).trim().substring(0, 2000), created_at: new Date().toISOString() };
+      res.status(201).json(msg);
     } catch (e) {
       res.status(500).json({ message: 'Failed to send' });
     }

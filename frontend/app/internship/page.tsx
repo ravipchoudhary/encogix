@@ -38,7 +38,6 @@ export default function InternshipPage() {
     name: "", email: "", phone: "", internship_type: "web", other_interest: "",
     college: "", course: "", message: "",
   });
-  const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "err">("idle");
 
   const submit = async (e: React.FormEvent) => {
@@ -48,6 +47,7 @@ export default function InternshipPage() {
     const finalType = form.internship_type === "other"
       ? (form.other_interest?.trim() || "Other")
       : (areasOfInterest.find((a) => a.id === form.internship_type)?.label || form.internship_type);
+    fd.append("access_key", "36fa8b83-2560-4e33-997a-78b0ed8eaa49");
     fd.append("internship_type", finalType);
     fd.append("name", form.name);
     fd.append("email", form.email);
@@ -55,14 +55,15 @@ export default function InternshipPage() {
     if (form.college) fd.append("college", form.college);
     if (form.course) fd.append("course", form.course);
     if (form.message) fd.append("message", form.message);
-    if (file) fd.append("resume", file);
     try {
-      const res = await fetch("/api/internships/apply", { method: "POST", body: fd });
-      if (res.ok) {
+      const res = await fetch("https://api.web3forms.com/submit", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.success) {
         setStatus("ok");
         setForm({ name: "", email: "", phone: "", internship_type: "web", other_interest: "", college: "", course: "", message: "" });
-        setFile(null);
-      } else setStatus("err");
+      } else {
+        setStatus("err");
+      }
     } catch {
       setStatus("err");
     }
@@ -167,16 +168,6 @@ export default function InternshipPage() {
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="label-field">Resume (PDF) *</label>
-              <input
-                required
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="file-input"
-              />
             </div>
             <div>
               <label className="label-field">Message</label>

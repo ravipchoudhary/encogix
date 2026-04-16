@@ -16,7 +16,13 @@ export default function EmployeeLeavePage() {
 
   const load = () => {
     fetch("/api/employee/leave", { headers: empAuthHeaders() })
-      .then((r) => (r.status === 401 ? router.replace("/employee/login") || [] : r.json()))
+      .then((r) => {
+        if (r.status === 401) {
+          router.replace("/employee/login");
+          return [] as { id: number; from_date: string; to_date: string; reason: string; status: string; created_at: string }[];
+        }
+        return r.json();
+      })
       .then(setLeaves)
       .catch(() => [])
       .finally(() => setLoading(false));

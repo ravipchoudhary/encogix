@@ -26,7 +26,13 @@ export default function AdminLeaveRequestsPage() {
 
   const load = () => {
     fetch("/api/admin/leave-requests", { headers: authHeaders() })
-      .then((r) => (r.status === 401 ? router.push("/admin/login") || [] : r.json()))
+      .then((r) => {
+        if (r.status === 401) {
+          router.push("/admin/login");
+          return [] as unknown as LeaveRow[];
+        }
+        return r.json();
+      })
       .then(setRows)
       .catch(() => [])
       .finally(() => setLoading(false));

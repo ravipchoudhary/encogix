@@ -99,15 +99,18 @@ export default function ChatbotWidget() {
 
       setSubmitting(true);
       try {
-        await fetch("/api/contact", {
+        const fd = new FormData();
+        fd.append("access_key", "36fa8b83-2560-4e33-997a-78b0ed8eaa49");
+        fd.append("name", form.name);
+        fd.append("email", form.email || text);
+        fd.append("phone", form.phone);
+        fd.append("subject", "New lead from chatbot");
+        fd.append("message", `Service interest: ${finalService}`);
+        fd.append("source", "Chatbot");
+
+        await fetch("https://api.web3forms.com/submit", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.name,
-            email: form.email || text,
-            phone: form.phone,
-            message: `Service interest: ${finalService}`,
-          }),
+          body: fd,
         });
       } catch (_) {}
 
