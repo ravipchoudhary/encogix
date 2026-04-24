@@ -4,6 +4,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import ChatbotWidget from "../components/ChatbotWidget";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Script from "next/script";
 
 const fontSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <ChatbotWidget />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       </body>
     </html>
   );
