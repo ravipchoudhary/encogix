@@ -62,6 +62,38 @@ async function dbInsert(sql, params = []) {
   return result.insertId || 0;
 }
 
+function slugifyTitle(title) {
+  return String(title || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'project';
+}
+
+async function uniqueProjectSlug(title, excludeId = null) {
+  const base = slugifyTitle(title);
+  let slug = base;
+  let n = 1;
+  while (true) {
+    const existing = excludeId
+      ? await dbGet('SELECT id FROM projects WHERE slug = ? AND id != ?', [slug, excludeId])
+      : await dbGet('SELECT id FROM projects WHERE slug = ?', [slug]);
+    if (!existing) return slug;
+    slug = `${base}-${++n}`;
+  }
+}
+
+async function migrateProjectSlugs() {
+  const rows = await dbAll('SELECT id, title, slug FROM projects');
+  for (const row of rows) {
+    if (row.slug) continue;
+    const slug = await uniqueProjectSlug(row.title, row.id);
+    await dbRun('UPDATE projects SET slug = ? WHERE id = ?', [slug, row.id]);
+  }
+}
+
 async function ensureDatabase() {
   try {
     const connection = await mysql.createConnection({
@@ -114,9 +146,19 @@ async function initDb() {
       title TEXT,
       description TEXT,
       image TEXT,
-      category TEXT
+      category TEXT,
+      client TEXT,
+      technologies TEXT,
+      project_url TEXT,
+      slug VARCHAR(255) UNIQUE
     )
   `);
+  for (const col of ['client TEXT', 'technologies TEXT', 'project_url TEXT', 'slug VARCHAR(255) UNIQUE']) {
+    try {
+      await dbRun(`ALTER TABLE projects ADD COLUMN ${col}`);
+    } catch (_) {}
+  }
+  await migrateProjectSlugs();
   await dbRun(`
     CREATE TABLE IF NOT EXISTS blogs (
       id INT PRIMARY KEY AUTO_INCREMENT,
@@ -334,9 +376,20 @@ async function main() {
 
   server.get('/api/projects', async (req, res) => {
     try {
-      res.json(await dbAll('SELECT * FROM projects'));
+      res.json(await dbAll('SELECT * FROM projects ORDER BY id DESC'));
     } catch (e) {
       res.status(500).json({ message: 'Failed to fetch projects' });
+    }
+  });
+
+  server.get('/api/projects/:slug', async (req, res) => {
+    try {
+      const param = decodeURIComponent(req.params.slug);
+      let project = await dbGet('SELECT * FROM projects WHERE slug = ?', [param]);
+      if (!project) return res.status(404).json({ message: 'Project not found' });
+      res.json(project);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch project' });
     }
   });
 
@@ -553,23 +606,31 @@ async function main() {
   });
 
   server.post('/api/admin/projects', authMiddleware, upload.single('image'), async (req, res) => {
-    const { title, description, category } = req.body;
+    const { title, description, category, client, technologies, project_url } = req.body;
     const imagePath = req.file ? '/uploads/' + req.file.filename : null;
     try {
-      const id = await dbInsert('INSERT INTO projects (title, description, image, category) VALUES (?, ?, ?, ?)', [title, description, imagePath, category]);
-      res.status(201).json({ id });
+      const slug = await uniqueProjectSlug(title);
+      const id = await dbInsert(
+        'INSERT INTO projects (title, description, image, category, client, technologies, project_url, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [title, description, imagePath, category || null, client || null, technologies || null, project_url || null, slug]
+      );
+      res.status(201).json({ id, slug });
     } catch (e) {
       res.status(500).json({ message: 'Failed to create project' });
     }
   });
   server.put('/api/admin/projects/:id', authMiddleware, upload.single('image'), async (req, res) => {
-    const { title, description, category } = req.body;
+    const { title, description, category, client, technologies, project_url } = req.body;
     try {
       const ex = await dbGet('SELECT * FROM projects WHERE id = ?', [req.params.id]);
       if (!ex) return res.status(404).json({ message: 'Project not found' });
       const img = req.file ? '/uploads/' + req.file.filename : ex.image;
-      await dbRun('UPDATE projects SET title = ?, description = ?, image = ?, category = ? WHERE id = ?', [title, description, img, category, req.params.id]);
-      res.json({ message: 'Project updated' });
+      const slug = await uniqueProjectSlug(title, req.params.id);
+      await dbRun(
+        'UPDATE projects SET title = ?, description = ?, image = ?, category = ?, client = ?, technologies = ?, project_url = ?, slug = ? WHERE id = ?',
+        [title, description, img, category || null, client || null, technologies || null, project_url || null, slug, req.params.id]
+      );
+      res.json({ message: 'Project updated', slug });
     } catch (e) {
       res.status(500).json({ message: 'Failed to update project' });
     }
