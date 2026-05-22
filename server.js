@@ -612,7 +612,7 @@ async function main() {
       const slug = await uniqueProjectSlug(title);
       const id = await dbInsert(
         'INSERT INTO projects (title, description, image, category, client, technologies, project_url, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [title, description, imagePath, category || null, client || null, technologies || null, project_url || null, slug]
+        [title || null, description || null, imagePath, category || null, client || null, technologies || null, project_url || null, slug]
       );
       res.status(201).json({ id, slug });
     } catch (e) {
@@ -628,7 +628,7 @@ async function main() {
       const slug = await uniqueProjectSlug(title, req.params.id);
       await dbRun(
         'UPDATE projects SET title = ?, description = ?, image = ?, category = ?, client = ?, technologies = ?, project_url = ?, slug = ? WHERE id = ?',
-        [title, description, img, category || null, client || null, technologies || null, project_url || null, slug, req.params.id]
+        [title || null, description || null, img, category || null, client || null, technologies || null, project_url || null, slug, req.params.id]
       );
       res.json({ message: 'Project updated', slug });
     } catch (e) {

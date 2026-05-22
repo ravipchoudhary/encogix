@@ -152,8 +152,8 @@ export default function AdminProjectsPage() {
             <h2 className="text-lg font-semibold text-primary mb-4">{modal.project ? "Edit Project" : "Add Project"}</h2>
             <form onSubmit={save} className="form-group">
               <div>
-                <label className="label-field">Title *</label>
-                <input required value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="input-field" placeholder="Project title" />
+                <label className="label-field">Title</label>
+                <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="input-field" placeholder="Project title" />
                 {form.title.trim() && (
                   <p className="text-xs text-slate-500 mt-1">
                     URL: <span className="font-mono text-secondary">{projectPath(slugifyTitle(form.title), form.title)}</span>
@@ -165,9 +165,8 @@ export default function AdminProjectsPage() {
                 <input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="input-field" placeholder="e.g. Fintech, Healthcare" />
               </div>
               <div>
-                <label className="label-field">Description *</label>
+                <label className="label-field">Description</label>
                 <textarea
-                  required
                   value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   rows={6}
@@ -185,7 +184,7 @@ export default function AdminProjectsPage() {
               </div>
               <div>
                 <label className="label-field">Live project URL</label>
-                <input type="url" value={form.project_url} onChange={(e) => setForm((f) => ({ ...f, project_url: e.target.value }))} className="input-field" placeholder="https://example.com" />
+                <input value={form.project_url} onChange={(e) => setForm((f) => ({ ...f, project_url: e.target.value }))} className="input-field" placeholder="https://example.com" />
               </div>
               <div>
                 <label className="label-field">Image {modal.project ? "(leave empty to keep current)" : ""}</label>
