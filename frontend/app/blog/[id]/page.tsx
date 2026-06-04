@@ -4,11 +4,14 @@ import type { Metadata } from "next";
 
 async function getBlog(id: string) {
   try {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-    const res = await fetch(`${base}/api/blogs/${id}`, { cache: "no-store" });
-    if (res.ok) return res.json();
-  } catch (_) {}
-  return null;
+    const res = await fetch(`/api/blogs/${id}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return null;
+    return res.json();
+  } catch (_) {
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {

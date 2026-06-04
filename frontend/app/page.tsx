@@ -14,16 +14,19 @@ export const metadata: Metadata = {
 };
 
 async function getHomeData() {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
   let projects: Array<{ title: string; description: string | null; category: string | null; client: string | null; technologies: string | null; slug: string | null }> = [];
   let testimonials: Array<{ name: string; company: string | null; designation: string | null; rating: number; text: string }> = [];
   try {
     const [pRes, tRes] = await Promise.all([
-      fetch(`${base}/api/projects`, { next: { revalidate: 60 } }),
-      fetch(`${base}/api/testimonials`, { next: { revalidate: 60 } }),
+      fetch('/api/projects', { next: { revalidate: 60 } }),
+      fetch('/api/testimonials', { next: { revalidate: 60 } }),
     ]);
-    if (pRes.ok) projects = (await pRes.json()).slice(0, 3);
-    if (tRes.ok) testimonials = await tRes.json();
+    if (pRes.ok && (pRes.headers.get('content-type') || '').includes('application/json')) {
+      projects = (await pRes.json()).slice(0, 3);
+    }
+    if (tRes.ok && (tRes.headers.get('content-type') || '').includes('application/json')) {
+      testimonials = await tRes.json();
+    }
   } catch (_) {}
   return {
     clients: ["RetailKart", "HealthFirst", "EduLearn", "ManufactureHub", "PropTech", "FinServe"],

@@ -28,11 +28,14 @@ const FALLBACK: ProjectItem[] = [
 
 async function getProjects(): Promise<ProjectItem[]> {
   try {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-    const res = await fetch(`${base}/api/projects`, { next: { revalidate: 60 } });
-    if (res.ok) return res.json();
-  } catch (_) {}
-  return [];
+    const res = await fetch('/api/projects', { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return [];
+    return res.json();
+  } catch (_) {
+    return [];
+  }
 }
 
 export default async function CaseStudiesPage() {

@@ -22,23 +22,29 @@ export interface Project {
   project_url: string | null;
 }
 
-const apiBase = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
 async function getProject(slug: string): Promise<Project | null> {
   try {
-    const res = await fetch(`${apiBase()}/api/projects/${encodeURIComponent(slug)}`, { cache: "no-store" });
+    const res = await fetch(`/api/projects/${encodeURIComponent(slug)}`, { cache: "no-store" });
     if (res.status === 404) return null;
-    if (res.ok) return res.json();
-  } catch (_) {}
-  return null;
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return null;
+    return res.json();
+  } catch (_) {
+    return null;
+  }
 }
 
 async function getAllProjects(): Promise<Project[]> {
   try {
-    const res = await fetch(`${apiBase()}/api/projects`, { cache: "no-store" });
-    if (res.ok) return res.json();
-  } catch (_) {}
-  return [];
+    const res = await fetch('/api/projects', { cache: "no-store" });
+    if (!res.ok) return [];
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return [];
+    return res.json();
+  } catch (_) {
+    return [];
+  }
 }
 
 function parseTechnologies(raw: string | null): string[] {
