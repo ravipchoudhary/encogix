@@ -16,9 +16,11 @@ export default function Footer() {
           <div>
             <Link href="/" className="inline-flex items-center mb-3">
               <img
-                src="/logo.png"
+                src="/logo.svg"
                 alt="Encogix Technology"
-                className="h-10 w-auto max-w-[120px] object-contain brightness-0 invert"
+                className="h-10 w-auto max-w-[140px] object-contain brightness-0 invert"
+                width={140}
+                height={40}
               />
             </Link>
             <p className="text-slate-300 text-sm">
@@ -73,9 +75,21 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 text-xs text-slate-400 border-t border-white/10 pt-8">
+          <div>
+            <p><span className="text-slate-300">GST:</span> Available on request</p>
+            <p className="mt-1"><span className="text-slate-300">Registered:</span> Encogix Technology — IT Services, Noida</p>
+          </div>
+          <div>
+            <a href="https://www.linkedin.com/company/encogix-technology" target="_blank" rel="noopener noreferrer" className="hover:text-white">LinkedIn</a>
+            <span className="mx-2">·</span>
+            <a href="https://maps.google.com/?q=Gaur+City+Center+Greater+Noida" target="_blank" rel="noopener noreferrer" className="hover:text-white">Google Maps</a>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400">
           <p>© {currentYear} Encogix Technology. All rights reserved.</p>
-          <p>Global Delivery. Local Expertise.</p>
+          <p>Website Development · Noida · Greater Noida · Delhi NCR</p>
         </div>
       </div>
     </footer>

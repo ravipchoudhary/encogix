@@ -1,0 +1,23 @@
+export const SITE = {
+  name: "Encogix Technology",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.encogix.com",
+  phone: "+91 9431607346",
+  phoneRaw: "919431607346",
+  phone2: "+91 7633926879",
+  email: "contact@encogix.com",
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "919431607346",
+  address: "Gaur City Center, Greater Noida, Uttar Pradesh, 201318",
+  addressBihar: "Near BM College, Rahika, Madhubani, Bihar, 847211",
+  linkedin: "https://www.linkedin.com/company/encogix-technology",
+  mapsUrl: "https://maps.google.com/?q=Gaur+City+Center+Greater+Noida",
+  tagline: "Website · App · CRM · AI · SEO — Noida & Delhi NCR",
+};
+
+export const SERVICE_LINKS = [
+  { href: "/services/website-development", label: "Website Development" },
+  { href: "/services/ecommerce-development", label: "Ecommerce Development" },
+  { href: "/services/mobile-app-development", label: "Mobile App Development" },
+  { href: "/services/crm-development", label: "CRM Development" },
+  { href: "/services/ai-solutions", label: "AI Solutions" },
+  { href: "/services/seo-services", label: "SEO Services" },
+];

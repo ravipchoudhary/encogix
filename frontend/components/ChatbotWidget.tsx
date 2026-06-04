@@ -1,195 +1,266 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-
-const SERVICE_DETAILS: Record<string, string> = {
-  "Software Development":
-    "We build enterprise-grade applications with modern architectures, clean APIs, and scalable backend systems. Our stack includes Node.js, Python, .NET, and more. We follow Agile methodology and ensure clean code, testing, and documentation. Typical delivery: 8–16 weeks depending on scope.",
-  "Web Development":
-    "We create responsive, performant web apps using React, Next.js, Vue, and modern frontend frameworks. From corporate sites to complex web apps, we deliver SEO-friendly, fast-loading solutions. We also handle CMS integration (WordPress, Strapi) and e-commerce platforms.",
-  "Android App Development":
-    "Native Android apps built with Kotlin and Java for performance, security, and great UX. We deliver apps for Play Store, follow Material Design, and ensure compatibility across devices. Services include architecture design, development, testing, and Play Store submission.",
-  "iOS App Development":
-    "Native iOS apps for iPhone and iPad using Swift. We build intuitive, App Store–ready apps with modern UI/UX. Our process includes design, development, testing, and App Store deployment support.",
-  "AI & Machine Learning":
-    "We offer AI/ML solutions: predictive analytics, NLP, computer vision, recommendation engines, and process automation. We use TensorFlow, PyTorch, and cloud AI (AWS, GCP). Ideal for data-driven decision-making and intelligent automation.",
-  "Mobile App Development":
-    "Cross-platform apps with React Native or Flutter—single codebase for iOS and Android. Faster delivery, lower cost, native-like performance. We handle full lifecycle: design, dev, testing, and store deployment.",
-  "Digital Marketing":
-    "Data-driven campaigns, SEO, content strategy, PPC, social media marketing, and analytics. We help you grow traffic, leads, and conversions. Services include keyword research, content creation, and performance tracking.",
-  "Cloud Solutions":
-    "We design, migrate, and optimize workloads on AWS, Azure, and GCP. Services: cloud architecture, migration, DevOps, containerization (Docker, Kubernetes), and managed cloud support.",
-  "IT Consulting":
-    "Strategic advisory on tech stack, architecture, security, and digital roadmaps. We help with vendor selection, cost optimization, and modernization strategies.",
-};
-
-const SERVICE_OPTIONS = Object.keys(SERVICE_DETAILS);
+import { SITE } from "../lib/site-config";
 
 interface ChatMessage {
   from: "user" | "bot";
   text: string;
 }
 
+type Mode = "menu" | "chat" | "lead";
+
+const QUICK_REPLIES = [
+  "Website Development",
+  "Ecommerce Website",
+  "Mobile App",
+  "CRM Software",
+  "AI Chatbot",
+  "SEO Services",
+  "Pricing",
+  "Contact Details",
+];
+
+const SERVICE_CATEGORIES = [
+  { label: "🌐 Website", query: "Tell me about website development and pricing" },
+  { label: "🛒 Ecommerce", query: "Ecommerce website development details" },
+  { label: "📱 Mobile App", query: "Mobile app development services" },
+  { label: "💼 CRM", query: "CRM and custom software development" },
+  { label: "🤖 AI Solutions", query: "AI chatbot and automation solutions" },
+  { label: "📈 SEO", query: "SEO and digital marketing packages" },
+];
+
 export default function ChatbotWidget() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [autoOpened, setAutoOpened] = useState(false);
+  const [mode, setMode] = useState<Mode>("menu");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", service: "" });
   const [input, setInput] = useState("");
+  const [leadStep, setLeadStep] = useState(0);
+  const [lead, setLead] = useState({ name: "", phone: "", service: "", budget: "" });
   const [submitting, setSubmitting] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (autoOpened) return;
-    const timer = setTimeout(() => {
-      setOpen(true);
-      setAutoOpened(true);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [autoOpened]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, open, mode, leadStep]);
 
   useEffect(() => {
-    if (open && step === 0 && messages.length === 0) {
+    if (open && messages.length === 0) {
       setMessages([
-        { from: "bot", text: "Welcome to Encogix Technology! 👋 We're glad you're here." },
-        { from: "bot", text: "What is your name?" },
+        {
+          from: "bot",
+          text: "Namaste! 👋 Welcome to Encogix Technology.\n\nI'm your digital assistant. Ask about websites, apps, CRM, AI, SEO, pricing, or get a free quote.",
+        },
       ]);
     }
-  }, [open, step, messages.length]);
+  }, [open, messages.length]);
 
-  const findService = (text: string) => {
-    const lower = text.toLowerCase().trim();
-    for (const s of SERVICE_OPTIONS) {
-      if (lower.includes(s.toLowerCase()) || s.toLowerCase().includes(lower)) return s;
+  if (pathname?.startsWith("/employee") || pathname?.startsWith("/admin")) return null;
+
+  const askBot = async (text: string) => {
+    setMessages((prev) => [...prev, { from: "user", text }]);
+    setInput("");
+    try {
+      const res = await fetch("/api/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      setMessages((prev) => [...prev, { from: "bot", text: data.reply || "Our team will contact you shortly." }]);
+    } catch {
+      setMessages((prev) => [...prev, { from: "bot", text: "Our team will contact you shortly. Call +91 9431607346." }]);
     }
-    if (lower.includes("software") || lower.includes("web") || lower.includes("android") || lower.includes("ios") || lower.includes("ai") || lower.includes("mobile") || lower.includes("marketing") || lower.includes("cloud") || lower.includes("consulting")) {
-      const map: Record<string, string> = { software: "Software Development", web: "Web Development", android: "Android App Development", ios: "iOS App Development", "ai": "AI & Machine Learning", ml: "AI & Machine Learning", mobile: "Mobile App Development", marketing: "Digital Marketing", cloud: "Cloud Solutions", consulting: "IT Consulting" };
-      for (const [k, v] of Object.entries(map)) {
-        if (lower.includes(k)) return v;
-      }
-    }
-    return null;
   };
 
-  const handleSend = async () => {
+  const handleSend = () => {
     const text = input.trim();
     if (!text) return;
+    if (mode === "chat") askBot(text);
+  };
 
-    setInput("");
-    setMessages((prev) => [...prev, { from: "user", text }]);
-
-    if (step === 0) {
-      setForm((f) => ({ ...f, name: text }));
-      setMessages((prev) => [...prev, { from: "bot", text: `Nice to meet you, ${text}! What is your phone number?` }]);
-      setStep(1);
-    } else if (step === 1) {
-      setForm((f) => ({ ...f, phone: text }));
-      setMessages((prev) => [...prev, { from: "bot", text: "What is your email address?" }]);
-      setStep(2);
-    } else if (step === 2) {
-      setForm((f) => ({ ...f, email: text }));
-      setMessages((prev) => [...prev, { from: "bot", text: "What work do you need? Please type or select a service." }]);
-      setStep(3);
-    } else if (step === 3) {
-      const matched = findService(text);
-      const finalService = matched || text;
-      setForm((f) => ({ ...f, service: finalService }));
-
-      setSubmitting(true);
-      try {
-        const fd = new FormData();
-        fd.append("access_key", "36fa8b83-2560-4e33-997a-78b0ed8eaa49");
-        fd.append("name", form.name);
-        fd.append("email", form.email || text);
-        fd.append("phone", form.phone);
-        fd.append("subject", "New lead from chatbot");
-        fd.append("message", `Service interest: ${finalService}`);
-        fd.append("source", "Chatbot");
-
-        await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          body: fd,
-        });
-      } catch (_) {}
-
-      const detail = typeof finalService === "string" && SERVICE_DETAILS[finalService]
-        ? SERVICE_DETAILS[finalService]
-        : "We will get back to you with full details soon. Our team will contact you shortly.";
-
+  const submitLead = async () => {
+    setSubmitting(true);
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: lead.name,
+          phone: lead.phone,
+          email: "",
+          message: `Service: ${lead.service}\nBudget: ${lead.budget}`,
+          source: "chatbot-lead",
+        }),
+      });
       setMessages((prev) => [
         ...prev,
-        { from: "bot", text: `Thank you, ${form.name}! Here are the full details about ${typeof finalService === "string" ? finalService : "your requirement"}:` },
-        { from: "bot", text: detail },
-        { from: "bot", text: `We will also reach you at ${form.phone} and ${form.email || text}. For more, email us at contact@encogix.com.` },
+        { from: "bot", text: `Thank you, ${lead.name}! 🎉 Our team will contact you at ${lead.phone} within 24 hours.` },
       ]);
-      setStep(4);
+      setMode("chat");
+      setLeadStep(0);
+      setLead({ name: "", phone: "", service: "", budget: "" });
+    } catch {
+      setMessages((prev) => [...prev, { from: "bot", text: "Something went wrong. Please WhatsApp us or call +91 9431607346." }]);
+    } finally {
       setSubmitting(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const handleLeadInput = (text: string) => {
+    setInput("");
+    if (leadStep === 0) {
+      setLead((l) => ({ ...l, name: text }));
+      setLeadStep(1);
+      setMessages((prev) => [...prev, { from: "user", text }, { from: "bot", text: "Great! What is your phone number?" }]);
+    } else if (leadStep === 1) {
+      setLead((l) => ({ ...l, phone: text }));
+      setLeadStep(2);
+      setMessages((prev) => [...prev, { from: "user", text }, { from: "bot", text: "Which service do you need?" }]);
+    } else if (leadStep === 2) {
+      setLead((l) => ({ ...l, service: text }));
+      setLeadStep(3);
+      setMessages((prev) => [...prev, { from: "user", text }, { from: "bot", text: "What is your approximate budget?" }]);
+    } else if (leadStep === 3) {
+      const updated = { ...lead, budget: text };
+      setLead(updated);
+      setMessages((prev) => [...prev, { from: "user", text }]);
+      submitLead();
     }
   };
 
-  if (pathname?.startsWith("/employee")) return null;
-  if (pathname?.startsWith("/admin")) return null;
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const text = input.trim();
+      if (!text) return;
+      if (mode === "lead") handleLeadInput(text);
+      else handleSend();
+    }
+  };
 
   return (
     <>
       <button
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-secondary to-blue-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300"
+        type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Open chatbot"
+        className={`chatbot-fab fixed bottom-6 right-4 z-50 flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-blue-500/30 hover:scale-105 transition-all duration-300 md:bottom-8 md:right-6 ${open ? "scale-95" : ""}`}
+        aria-label={open ? "Close chat" : "Open chat assistant"}
       >
-        💬
+        {open ? (
+          <svg className="w-6 h-6 m-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        ) : (
+          <>
+            <span className="relative flex h-12 w-12 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/20" />
+              <svg className="w-6 h-6 relative" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            </span>
+            <span className="hidden sm:inline pr-4 text-sm font-semibold">Chat with us</span>
+          </>
+        )}
       </button>
-      {open && (
-        <div className="fixed bottom-24 right-6 z-40 w-96 max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-primary text-white text-sm font-medium">
-            <span>Encogix Assistant</span>
-            <button onClick={() => setOpen(false)} className="text-xs text-white/80 hover:text-white">✕</button>
+
+      <div
+        className={`chatbot-panel fixed bottom-24 right-4 z-50 w-[min(100vw-2rem,400px)] flex flex-col rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-2xl overflow-hidden transition-all duration-300 origin-bottom-right md:bottom-28 md:right-6 ${
+          open ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"
+        }`}
+      >
+        <div className="flex items-center gap-3 px-4 py-3.5 bg-gradient-to-r from-primary to-blue-800 text-white">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">E</div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm">Encogix Assistant</p>
+            <p className="text-xs text-white/70">Online · Replies instantly</p>
           </div>
-          <div className="flex-1 max-h-[380px] overflow-y-auto p-4 space-y-2">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.from === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`rounded-2xl px-3 py-2 max-w-[85%] text-sm ${m.from === "user" ? "bg-secondary text-white" : "bg-slate-100 text-slate-800"}`}>
-                  {m.text}
-                </div>
+        </div>
+
+        <div className="flex-1 max-h-[340px] overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-slate-50/50 to-white">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.from === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`rounded-2xl px-3.5 py-2.5 max-w-[88%] text-sm leading-relaxed whitespace-pre-wrap ${
+                m.from === "user" ? "bg-secondary text-white rounded-br-md" : "bg-white border border-slate-100 text-slate-800 shadow-sm rounded-bl-md"
+              }`}>
+                {m.text}
               </div>
-            ))}
-            {step === 3 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {SERVICE_OPTIONS.slice(0, 6).map((s) => (
-                  <button key={s} onClick={() => { setInput(s); }} className="text-xs px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700">
-                    {s}
+            </div>
+          ))}
+
+          {mode === "menu" && (
+            <div className="space-y-3 pt-1">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Quick actions</p>
+              <div className="grid grid-cols-2 gap-2">
+                {SERVICE_CATEGORIES.map((c) => (
+                  <button
+                    key={c.label}
+                    type="button"
+                    onClick={() => { setMode("chat"); askBot(c.query); }}
+                    className="text-left text-xs px-3 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-secondary hover:bg-blue-50/50 transition-all"
+                  >
+                    {c.label}
                   </button>
                 ))}
               </div>
-            )}
-            {submitting && <div className="text-xs text-slate-400">Please wait…</div>}
-          </div>
-          {step < 4 && (
-            <div className="border-t border-slate-200 px-3 py-2 flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={step === 0 ? "Your name" : step === 1 ? "Phone number" : step === 2 ? "Email address" : "Type your requirement"}
-                className="flex-1 rounded-full border-2 border-slate-200 px-4 py-2.5 text-sm placeholder-slate-400 focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all"
-              />
-              <button onClick={handleSend} disabled={!input.trim()} className="rounded-full bg-secondary text-white px-4 py-2.5 text-sm font-semibold shadow-md disabled:opacity-50 hover:bg-blue-700 transition-colors">
-                Send
+              <button
+                type="button"
+                onClick={() => { setMode("lead"); setLeadStep(0); setMessages((prev) => [...prev, { from: "bot", text: "Let's capture your details for a free quote. What is your name?" }]); }}
+                className="w-full text-sm font-semibold py-2.5 rounded-xl bg-secondary text-white hover:bg-blue-700 transition-colors"
+              >
+                Get Free Quote
               </button>
+              <a
+                href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent("Hi Encogix, I need help with a project.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-xl border-2 border-[#25D366] text-[#128C7E] hover:bg-green-50 transition-colors"
+              >
+                Continue on WhatsApp
+              </a>
             </div>
           )}
+
+          {mode === "chat" && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {QUICK_REPLIES.map((q) => (
+                <button key={q} type="button" onClick={() => askBot(q)} className="text-xs px-2.5 py-1 rounded-full bg-slate-100 hover:bg-secondary hover:text-white text-slate-700 transition-colors">
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+          <div ref={bottomRef} />
         </div>
-      )}
+
+        {(mode === "chat" || mode === "lead") && (
+          <div className="border-t border-slate-200 p-3 flex gap-2 bg-white">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKeyDown}
+              disabled={submitting}
+              placeholder={mode === "lead" ? (leadStep === 0 ? "Your name" : leadStep === 1 ? "Phone number" : leadStep === 2 ? "Service required" : "Budget") : "Type your question…"}
+              className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => { const t = input.trim(); if (!t) return; mode === "lead" ? handleLeadInput(t) : handleSend(); }}
+              disabled={!input.trim() || submitting}
+              className="rounded-xl bg-secondary text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-blue-700 transition-colors"
+            >
+              Send
+            </button>
+          </div>
+        )}
+
+        {mode !== "menu" && (
+          <div className="px-3 pb-3 bg-white">
+            <button type="button" onClick={() => setMode("menu")} className="text-xs text-secondary hover:underline">
+              ← Back to menu
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 }

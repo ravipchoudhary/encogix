@@ -72,6 +72,7 @@ export default function EmployeeDashboardPage() {
   };
 
   const quickLinks = [
+    { href: "/employee/leads", label: "My Leads", desc: "View and update assigned customer inquiries and follow-up notes.", icon: "📋" },
     {
       href: "/employee/attendance",
       label: "Attendance",

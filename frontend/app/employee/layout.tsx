@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { getEmployeeToken, isTokenValid } from "../../lib/auth";
 
 const navItems = [
   { href: "/employee/dashboard", label: "Dashboard" },
+  { href: "/employee/leads", label: "My Leads" },
   { href: "/employee/attendance", label: "Attendance" },
   { href: "/employee/profile", label: "My Profile" },
   { href: "/employee/leave", label: "Leave Request" },
@@ -24,7 +26,9 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
       setReady(true);
       return;
     }
-    if (!localStorage.getItem("employee_token")) {
+    const token = getEmployeeToken();
+    if (!isTokenValid(token, "employee")) {
+      localStorage.removeItem("employee_token");
       router.replace("/employee/login");
       return;
     }

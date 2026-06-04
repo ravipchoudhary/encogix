@@ -4,16 +4,40 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import ChatbotWidget from "../components/ChatbotWidget";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import StickyCTA from "../components/StickyCTA";
+import { LocalBusinessSchema } from "../components/JsonLd";
 import Script from "next/script";
 
 const fontSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.encogix.com";
 
 export const metadata: Metadata = {
-  title: "Encogix Technology | Engineering Digital Innovation",
+  title: {
+    default: "Encogix Technology | Website & Software Development Company in Noida",
+    template: "%s | Encogix Technology",
+  },
   description:
-    "Encogix Technology is a global technology company delivering software development, cloud solutions, and digital innovation for enterprises.",
-  metadataBase: new URL("https://www.encogix.example"), // adjust when deploying
-  icons: { icon: "/logo.png" },
+    "Encogix Technology — website development, ecommerce, mobile apps, CRM, AI chatbots & SEO in Noida, Greater Noida & Delhi NCR. Free consultation. Call +91 9431607346.",
+  metadataBase: new URL(siteUrl),
+  icons: { icon: "/logo.svg" },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: siteUrl,
+    siteName: "Encogix Technology",
+    title: "Encogix Technology | IT Company in Noida",
+    description:
+      "Website development, mobile apps, custom software & digital marketing in Noida & Delhi NCR.",
+  },
+  twitter: { card: "summary_large_image" },
+  keywords: [
+    "website development company Noida",
+    "software development Greater Noida",
+    "web development Delhi NCR",
+    "IT services Noida",
+    "mobile app development",
+    "ecommerce website",
+  ],
 };
 
 export default function RootLayout({
@@ -23,12 +47,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={fontSans.variable}>
+      <head>
+        <LocalBusinessSchema />
+      </head>
       <body className="min-h-screen flex flex-col bg-background">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <StickyCTA />
         <ChatbotWidget />
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
     </html>
   );

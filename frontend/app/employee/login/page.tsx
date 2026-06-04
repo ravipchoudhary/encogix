@@ -23,53 +23,42 @@ export default function EmployeeLoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.token) {
+        localStorage.removeItem("admin_token");
         localStorage.setItem("employee_token", data.token);
         router.push("/employee/dashboard");
       } else {
         setErr(data.message || "Invalid credentials");
       }
     } catch {
-      setErr("Login failed");
+      setErr("Login failed. Check server connection.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-primary/5 to-secondary/10 section-modern">
-      <div className="card-flat card-flat-3d glass-card w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-primary mb-2">Employee Login</h1>
-        <p className="text-sm text-slate-600 mb-4">Use your Employee ID and password</p>
-        <form onSubmit={submit} className="form-group">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <img src="/logo.svg" alt="Encogix" className="h-12 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-primary">Employee Portal</h1>
+          <p className="text-slate-600 text-sm mt-1">Sign in with your Employee ID</p>
+        </div>
+        <form onSubmit={submit} className="card rounded-2xl p-8 space-y-5 shadow-xl border-slate-200/80">
           <div>
             <label className="label-field">Employee ID</label>
-            <input
-              required
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="input-field"
-              placeholder="e.g. EMP001"
-            />
+            <input required value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="input-field" placeholder="e.g. EMP001" autoComplete="username" />
           </div>
           <div>
             <label className="label-field">Password</label>
-            <input
-              required
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
-            />
+            <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input-field" placeholder="••••••••" autoComplete="current-password" />
           </div>
-          {err && <p className="text-red-600 text-sm">{err}</p>}
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          {err && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{err}</p>}
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
             {loading ? "Signing in…" : "Sign in"}
           </button>
+          <Link href="/" className="block text-center text-sm text-slate-500 hover:text-secondary">← Back to website</Link>
         </form>
-        <Link href="/" className="block mt-4 text-center text-sm text-slate-500 hover:text-secondary">
-          ← Back to site
-        </Link>
       </div>
     </div>
   );

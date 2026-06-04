@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { getAdminToken, isTokenValid } from "../../lib/auth";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard" },
@@ -31,8 +32,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setAuthReady(true);
       return;
     }
-    const token = localStorage.getItem("admin_token");
-    if (!token) {
+    const token = getAdminToken();
+    if (!isTokenValid(token, "admin")) {
+      localStorage.removeItem("admin_token");
       router.replace("/admin/login");
       return;
     }

@@ -349,3 +349,54 @@ select.input-field {
 .card-3d:hover .icon-wrap-3d {
   transform: scale(1.1) translateZ(8px);
 }
+
+/* Process 3D section */
+.process-3d-node {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+}
+.process-3d-active {
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.45);
+  transform: scale(1.1) translateZ(12px);
+}
+.process-3d-card {
+  transform-style: preserve-3d;
+}
+.process-3d-icon {
+  transform: translateZ(16px);
+  transition: transform 0.3s ease;
+}
+.process-3d-card:hover .process-3d-icon {
+  transform: translateZ(24px) scale(1.05);
+}
+
+/* Chatbot & WhatsApp positioning */
+.chatbot-fab {
+  bottom: 1.5rem;
+  right: 1rem;
+}
+@media (min-width: 768px) {
+  .chatbot-fab { bottom: 2rem; right: 1.5rem; }
+}
+.whatsapp-float {
+  animation: waPulse 3s ease-in-out infinite;
+}
+@keyframes waPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35); }
+  50% { box-shadow: 0 6px 28px rgba(37, 211, 102, 0.55); }
+}
+
+/* Admin panel enhancements */
+.admin-stat-card {
+  @apply card relative overflow-hidden;
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+}
+.admin-stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #38bdf8);
+}

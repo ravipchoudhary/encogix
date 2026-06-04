@@ -1,60 +1,76 @@
+import type { Metadata } from "next";
+import type { ComponentType } from "react";
 import Link from "next/link";
-import { IconCode2, IconGlobe, IconSmartphone, IconCloud, IconBriefcase, IconBrain, IconBarChart3, IconArrowRight, IconWrench } from "../../components/Icons";
+import PageHero, { CTASection } from "../../components/PageHero";
+import { SERVICES } from "../../lib/services-data";
+import { IconArrowRight, IconGlobe, IconSmartphone, IconBriefcase, IconBrain, IconBarChart3, IconShoppingBag } from "../../components/Icons";
 
-const services = [
-  { title: "Software Development", desc: "Enterprise-grade applications with modern architectures, clean APIs, and scalable backend systems.", Icon: IconCode2 },
-  { title: "Web Development", desc: "Responsive, performant web applications using React, Next.js, and modern frontend frameworks.", Icon: IconGlobe },
-  { title: "Android App Development", desc: "Native Android apps built with Kotlin and Java for performance, security, and engaging experiences.", Icon: IconSmartphone },
-  { title: "iOS App Development", desc: "Native iOS apps for iPhone and iPad using Swift, delivering smooth and intuitive experiences.", Icon: IconSmartphone },
-  { title: "AI & Machine Learning", desc: "Smart AI solutions, ML models, predictive analytics, and intelligent automation.", Icon: IconBrain },
-  { title: "Mobile App Development", desc: "Cross-platform mobile apps with React Native or Flutter for unified codebase.", Icon: IconSmartphone },
-  { title: "Digital Marketing", desc: "Data-driven campaigns, SEO, content strategy, and analytics to grow digital presence.", Icon: IconBarChart3 },
-  { title: "Cloud Solutions", desc: "Design, migrate, and optimize workloads across AWS, Azure, and GCP.", Icon: IconCloud },
-  { title: "IT Consulting", desc: "Strategic advisory on modernization, security, architecture, and digital roadmaps.", Icon: IconBriefcase },
-];
+export const metadata: Metadata = {
+  title: "IT Services — Website, App, CRM, AI & SEO in Noida | Encogix",
+  description: "Complete IT services in Noida & Delhi NCR: website development, ecommerce, mobile apps, CRM, AI chatbots, SEO & digital marketing.",
+};
+
+const ICONS: Record<string, ComponentType<{ className?: string }>> = {
+  globe: IconGlobe,
+  cart: IconShoppingBag,
+  mobile: IconSmartphone,
+  crm: IconBriefcase,
+  ai: IconBrain,
+  seo: IconBarChart3,
+};
 
 export default function ServicesPage() {
+  const serviceList = Object.values(SERVICES);
+
   return (
-    <div className="section-padding section-modern">
-      <div className="container-page space-y-16">
-        <div className="page-hero-modern">
-          <span className="chip mb-4 inline-flex items-center gap-2">
-            <IconWrench className="w-4 h-4" /> What we offer
-          </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
-            Our Services
-          </h1>
-          <p className="mt-4 text-slate-600 max-w-2xl">
-            Encogix Technology delivers end-to-end digital solutions for enterprises—from strategy and design to implementation and support.
-          </p>
-        </div>
+    <>
+      <PageHero
+        chip="Noida · Greater Noida · Delhi NCR"
+        title="Our Services"
+        subtitle="End-to-end digital solutions — from your first website to enterprise CRM, AI automation, and SEO growth."
+      >
+        <Link href="/contact" className="btn-primary inline-flex items-center gap-2">
+          Free Consultation <IconArrowRight className="w-4 h-4" />
+        </Link>
+        <Link href="/pricing" className="btn-outline">View Pricing</Link>
+      </PageHero>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((s) => (
-            <div key={s.title} className="card card-3d block-3d group">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/20 to-accent/20 flex items-center justify-center mb-4 text-secondary group-hover:from-secondary/30 group-hover:to-accent/30 transition-colors icon-wrap-3d">
-                <s.Icon className="w-7 h-7" />
-              </div>
-              <h2 className="text-lg font-semibold text-primary mb-2 group-hover:text-secondary transition-colors">{s.title}</h2>
-              <p className="text-sm text-slate-600">{s.desc}</p>
-            </div>
-          ))}
+      <section className="section-padding">
+        <div className="container-page grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {serviceList.map((s) => {
+            const Icon = ICONS[s.icon] || IconGlobe;
+            return (
+              <Link
+                key={s.slug}
+                href={`/services/${s.slug}`}
+                className="card card-3d block-3d group flex flex-col"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/20 to-accent/20 flex items-center justify-center mb-4 text-secondary group-hover:scale-110 transition-transform">
+                  <Icon className="w-7 h-7" />
+                </div>
+                <h2 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors">{s.title}</h2>
+                <p className="text-sm text-slate-600 mt-2 flex-1 line-clamp-3">{s.intro.slice(0, 120)}…</p>
+                <p className="text-sm font-semibold text-secondary mt-4 inline-flex items-center gap-1">
+                  From {s.pricingFrom} <IconArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </p>
+              </Link>
+            );
+          })}
         </div>
+      </section>
 
-        <div className="block-3d rounded-3xl bg-gradient-to-br from-primary via-blue-800 to-blue-900 text-white text-center py-14 px-8 shadow-2xl shadow-blue-900/30 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-          <div className="relative z-10">
-            <h2 className="text-xl font-bold flex items-center justify-center gap-2">
-              <IconWrench className="w-6 h-6 text-amber-300" /> Need a custom solution?
-            </h2>
-            <p className="mt-2 text-slate-200">Let&apos;s discuss how we can help.</p>
-            <Link href="/contact" className="inline-flex items-center gap-2 mt-4 rounded-xl bg-white px-6 py-2.5 text-sm font-semibold text-primary shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-              Contact us <IconArrowRight className="w-4 h-4" />
-            </Link>
+      <section className="section-padding bg-slate-50/50">
+        <div className="container-page">
+          <h2 className="text-2xl font-bold text-primary mb-6">Also Available</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {["Hosting & Domain", "Website Maintenance", "WhatsApp Marketing API", "Complaint Management Software", "AI Calling Agent", "UI/UX Design", "Internship Program", "IT Consulting"].map((item) => (
+              <div key={item} className="glass-card rounded-xl px-4 py-3 text-sm font-medium text-slate-700">{item}</div>
+            ))}
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <CTASection />
+    </>
   );
 }

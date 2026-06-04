@@ -1,21 +1,47 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { IconCode2, IconCloud, IconBriefcase, IconLayout, IconDatabase, IconBrain, IconLandmark, IconHeartPulse, IconShoppingBag, IconQuote, IconArrowRight, IconZap, IconFolderKanban, IconMapPin, IconUsers } from "../components/Icons";
+import HomeSections from "../components/HomeSections";
+import ProcessSection from "../components/ProcessSection";
+import {
+  IconCode2, IconCloud, IconBriefcase, IconLayout, IconDatabase, IconBrain,
+  IconQuote, IconArrowRight, IconZap, IconFolderKanban, IconMapPin, IconUsers,
+  IconGlobe, IconSmartphone, IconBarChart3,
+} from "../components/Icons";
+
+export const metadata: Metadata = {
+  title: "Website & Software Development Company in Noida | Encogix Technology",
+  description: "Encogix Technology — premium website development, ecommerce, mobile apps, CRM, AI & SEO in Noida, Greater Noida & Delhi NCR. 120+ projects. Free consultation.",
+};
 
 async function getHomeData() {
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  let projects: Array<{ title: string; description: string | null; category: string | null; client: string | null; technologies: string | null; slug: string | null }> = [];
+  let testimonials: Array<{ name: string; company: string | null; designation: string | null; rating: number; text: string }> = [];
+  try {
+    const [pRes, tRes] = await Promise.all([
+      fetch(`${base}/api/projects`, { next: { revalidate: 60 } }),
+      fetch(`${base}/api/testimonials`, { next: { revalidate: 60 } }),
+    ]);
+    if (pRes.ok) projects = (await pRes.json()).slice(0, 3);
+    if (tRes.ok) testimonials = await tRes.json();
+  } catch (_) {}
   return {
-    clients: ["NovaBank", "Skyline Retail", "HelioHealth", "BlueOrbit Cloud"],
+    clients: ["RetailKart", "HealthFirst", "EduLearn", "ManufactureHub", "PropTech", "FinServe"],
+    projects,
+    testimonials,
   };
 }
 
 const statsData = [
   { label: "Projects Delivered", value: "120+", Icon: IconLayout },
-  { label: "Global Clients", value: "40+", Icon: IconUsers },
-  { label: "Countries Served", value: "12", Icon: IconMapPin },
-  { label: "Uptime SLA", value: "99.9%", Icon: IconZap },
+  { label: "Happy Clients", value: "80+", Icon: IconUsers },
+  { label: "Years Experience", value: "5+", Icon: IconMapPin },
+  { label: "Noida & NCR", value: "Local", Icon: IconZap },
 ];
 
 export default async function HomePage() {
-  const { clients } = await getHomeData();
+  const { clients, projects, testimonials } = await getHomeData();
+  const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP || "919431607346";
 
   return (
     <div>
@@ -28,25 +54,38 @@ export default async function HomePage() {
           <div className="space-y-6 fade-in-up">
             <span className="chip inline-flex items-center gap-2">
               <IconZap className="w-4 h-4" />
-              Engineering Digital Innovation
+              Website & Software Development — Noida · Greater Noida · Delhi NCR
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary tracking-tight leading-tight">
-              Transforming enterprises
+              Grow your business with
               <br />
-              <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">with intelligent technology.</span>
+              <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">websites, apps & digital marketing.</span>
             </h1>
             <p className="text-base sm:text-lg text-slate-600 max-w-xl">
-              Encogix Technology partners with global organizations to design,
-              build, and scale secure digital platforms across cloud, web, and mobile.
+              Encogix Technology builds high-converting websites, ecommerce stores, mobile apps, CRM systems, and SEO campaigns for startups and enterprises across Noida and India.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/contact" className="btn-primary inline-flex items-center gap-2">
-                Book a consultation
+                Get Free Consultation
                 <IconArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/portfolio" className="btn-outline inline-flex items-center gap-2">
-                View our work
-              </Link>
+              <a
+                href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hi Encogix, I need help with my website/project.")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline inline-flex items-center gap-2"
+              >
+                WhatsApp Us
+              </a>
+              <a href="tel:+919431607346" className="btn-outline inline-flex items-center gap-2">
+                Call Now
+              </a>
+            </div>
+            <div className="flex flex-wrap gap-2 pt-2 text-xs text-slate-500">
+              <span className="chip">GST Registered</span>
+              <span className="chip">5+ Years</span>
+              <span className="chip">120+ Projects</span>
+              <span className="chip">Free Audit</span>
             </div>
           </div>
           <div className="hero-3d-wrapper fade-in-up md:justify-self-end">
@@ -129,21 +168,12 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-7 md:grid-cols-3">
             {[
-              {
-                title: "Software Development",
-                desc: "We develop custom software products and internal tools using modern architectures, clean APIs and quality coding standards so your business workflows stay reliable, easy to extend and simple to maintain over time.",
-                Icon: IconCode2,
-              },
-              {
-                title: "Cloud Solutions",
-                desc: "Our engineers design cloud architectures, handle migrations and fine-tune performance across AWS, Azure or other providers to reduce downtime, cut infrastructure costs and keep your applications highly available and secure.",
-                Icon: IconCloud,
-              },
-              {
-                title: "IT Consulting",
-                desc: "We advise on technology strategy, modernization and security so you can choose the right platforms, plan realistic roadmaps, avoid unnecessary spending and align every digital initiative with clear business outcomes.",
-                Icon: IconBriefcase,
-              },
+              { title: "Website Development", desc: "Business websites that load fast, rank on Google, and turn visitors into leads.", Icon: IconGlobe },
+              { title: "Ecommerce Development", desc: "Online stores with secure payments, inventory, and sales-focused design.", Icon: IconCloud },
+              { title: "Mobile App Development", desc: "Android & iOS apps for customer engagement and internal operations.", Icon: IconSmartphone },
+              { title: "CRM & Custom Software", desc: "Lead tracking, dashboards, and workflows built for your team.", Icon: IconCode2 },
+              { title: "AI Chatbot & Automation", desc: "WhatsApp bots and smart automation to save time and capture leads 24/7.", Icon: IconBrain },
+              { title: "SEO & Digital Marketing", desc: "Local SEO in Noida, content, ads, and measurable growth.", Icon: IconBarChart3 },
             ].map((card) => (
               <div key={card.title} className="card card-3d block-3d group/card py-7">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/15 to-accent/15 flex items-center justify-center mb-5 text-secondary group-hover/card:from-secondary/25 group-hover/card:to-accent/25 transition-colors icon-wrap-3d">
@@ -203,17 +233,22 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            {[
-              { chip: "Fintech", title: "Digital banking platform", desc: "Scalable cloud-native banking platform enabling instant account opening and real-time payments.", Icon: IconLandmark },
-              { chip: "Healthcare", title: "Patient engagement suite", desc: "Secure mobile and web apps improving patient communication and care coordination.", Icon: IconHeartPulse },
-              { chip: "Retail", title: "Omnichannel commerce", desc: "Unified ecommerce, in-store, and marketplace experiences for a global retailer.", Icon: IconShoppingBag },
-            ].map((item) => (
+            {(projects.length > 0 ? projects : [
+              { title: "Ecommerce Platform", description: "Fashion retailer online store with Razorpay & admin panel.", category: "Ecommerce", client: "Confidential Client", technologies: "Next.js, Node.js", slug: null },
+              { title: "CRM & Lead System", description: "Sales CRM with lead assignment and follow-up tracking.", category: "Software", client: "Confidential Client", technologies: "React, PostgreSQL", slug: null },
+              { title: "Healthcare Booking App", description: "Appointment booking with SMS reminders.", category: "Healthcare", client: "HealthFirst Clinics", technologies: "React Native", slug: null },
+            ]).map((item) => (
               <div key={item.title} className="card card-3d block-3d">
-                <span className="chip mb-3 inline-flex items-center gap-1">
-                  <item.Icon className="w-3.5 h-3.5" /> {item.chip}
-                </span>
+                {item.category && <span className="chip mb-3">{item.category}</span>}
                 <h3 className="font-semibold text-primary mb-1">{item.title}</h3>
-                <p className="text-sm text-slate-600">{item.desc}</p>
+                <p className="text-sm text-slate-600">{item.description}</p>
+                {item.client && <p className="text-xs text-slate-500 mt-2">Client: {item.client}</p>}
+                {item.technologies && <p className="text-xs text-secondary mt-1">{item.technologies}</p>}
+                {item.slug && (
+                  <Link href={`/portfolio/${item.slug}`} className="text-sm text-secondary mt-3 inline-flex items-center gap-1">
+                    View case study <IconArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
               </div>
             ))}
           </div>
@@ -229,14 +264,17 @@ export default async function HomePage() {
               Trusted by leaders worldwide
             </h2>
             <div className="space-y-4">
-              {[
-                { quote: "Encogix has been instrumental in our cloud transformation. Their teams combine deep engineering expertise with a truly consultative approach.", author: "CIO, Global Retail Group" },
-                { quote: "From discovery to rollout, Encogix delivered a secure, compliant, and beautifully designed digital experience for our customers.", author: "Head of Digital, European Bank" },
-              ].map((t, i) => (
+              {(testimonials.length > 0 ? testimonials : [
+                { text: "Encogix built our ecommerce site on time. Sales increased significantly after launch.", name: "Rahul Sharma", company: "RetailKart India", designation: "Founder", rating: 5 },
+                { text: "Professional team, clear communication, and strong SEO results in Noida.", name: "Priya Mehta", company: "Confidential Client", designation: "Operations Head", rating: 5 },
+              ]).map((t, i) => (
                 <div key={i} className="card card-3d block-3d">
                   <IconQuote className="w-8 h-8 text-secondary/40 mb-2" />
-                  <p className="text-sm text-slate-700">{t.quote}</p>
-                  <p className="mt-3 text-xs font-semibold text-slate-500">{t.author}</p>
+                  <p className="text-sm text-amber-500">{"★".repeat(t.rating || 5)}</p>
+                  <p className="text-sm text-slate-700 mt-2">{t.text}</p>
+                  <p className="mt-3 text-xs font-semibold text-slate-500">
+                    {t.name}{t.designation ? `, ${t.designation}` : ""}{t.company ? ` — ${t.company}` : ""}
+                  </p>
                 </div>
               ))}
             </div>
@@ -255,6 +293,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <ProcessSection />
+      <HomeSections />
 
       {/* CTA */}
       <section className="section-padding section-modern">
