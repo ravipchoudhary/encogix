@@ -127,10 +127,10 @@ export default function AdminEmployeesPage() {
         </div>
       )}
       {modal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setModal({ open: false, employee: null })}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto" onClick={() => setModal({ open: false, employee: null })}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-primary mb-4">{modal.employee ? "Edit Employee" : "Add Employee"}</h2>
-            <form onSubmit={save} className="form-group">
+            <form onSubmit={save} className="form-group space-y-4">
               {!modal.employee && (
                 <div>
                   <label className="label-field">Employee ID *</label>

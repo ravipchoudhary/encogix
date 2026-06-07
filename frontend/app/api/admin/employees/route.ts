@@ -36,7 +36,18 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { id: "asc" },
     });
-    return NextResponse.json(employees);
+    const normalized = employees.map((emp) => ({
+      id: emp.id,
+      employee_id: emp.employeeId,
+      name: emp.name,
+      email: emp.email,
+      phone: emp.phone,
+      designation: emp.designation,
+      dob: emp.dob,
+      join_date: emp.joinDate,
+      created_at: emp.createdAt,
+    }));
+    return NextResponse.json(normalized);
   } catch (error: unknown) {
     return NextResponse.json({ message: "Failed to fetch employees", error: error instanceof Error ? error.message : null }, { status: 500 });
   }
