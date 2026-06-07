@@ -4,7 +4,7 @@ export function LocalBusinessSchema() {
     "@type": "LocalBusiness",
     name: "Encogix Technology",
     url: "https://www.encogix.com",
-    logo: "https://www.encogix.com/logo.svg",
+    logo: "/logo.png",
     description:
       "Website development, mobile apps, custom software, CRM, AI chatbots & SEO in Noida, Greater Noida & Delhi NCR.",
     telephone: "+91-9431607346",

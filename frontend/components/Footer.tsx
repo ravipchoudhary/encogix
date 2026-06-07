@@ -16,7 +16,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="inline-flex items-center mb-3">
               <img
-                src="/logo.svg"
+                src="/logo.png"
                 alt="Encogix Technology"
                 className="h-10 w-auto max-w-[140px] object-contain brightness-0 invert"
                 width={140}

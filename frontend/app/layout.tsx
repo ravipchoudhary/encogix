@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description:
     "Encogix Technology — website development, ecommerce, mobile apps, CRM, AI chatbots & SEO in Noida, Greater Noida & Delhi NCR. Free consultation. Call +91 9431607346.",
   metadataBase: new URL(siteUrl),
-  icons: { icon: "/logo.svg" },
+  icons: { icon: "/logo.png" },
   openGraph: {
     type: "website",
     locale: "en_IN",

@@ -40,7 +40,7 @@ export default function EmployeeLoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.svg" alt="Encogix" className="h-12 mx-auto mb-4" />
+          <img src="/logo.png" alt="Encogix" className="h-12 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-primary">Employee Portal</h1>
           <p className="text-slate-600 text-sm mt-1">Sign in with your Employee ID</p>
         </div>

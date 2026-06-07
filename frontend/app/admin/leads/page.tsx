@@ -30,6 +30,7 @@ export default function AdminLeadsPage() {
   const router = useRouter();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [filter, setFilter] = useState<'all' | 'audit'>('all');
   const [loading, setLoading] = useState(true);
 
   const load = () => {
@@ -76,10 +77,36 @@ export default function AdminLeadsPage() {
     );
   }
 
+  const auditCount = leads.filter((lead) => lead.source === 'website-audit').length;
+  const filteredLeads = leads.filter(
+    (lead) => filter === 'all' || lead.source === 'website-audit'
+  );
+
   return (
     <div className="section-padding container-page">
-      <h1 className="text-2xl font-semibold text-primary mb-6">Leads & Inquiries</h1>
-      {leads.length === 0 ? (
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-primary">Leads & Inquiries</h1>
+          <p className="text-sm text-slate-600">View all website leads and audit requests from homepage visitors.</p>
+        </div>
+        <div className="inline-flex overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+          <button
+            type="button"
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 text-sm font-medium ${filter === 'all' ? 'bg-white text-secondary' : 'text-slate-600 hover:text-secondary'}`}
+          >
+            All ({leads.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter('audit')}
+            className={`px-4 py-2 text-sm font-medium ${filter === 'audit' ? 'bg-white text-secondary' : 'text-slate-600 hover:text-secondary'}`}
+          >
+            Website Audits ({auditCount})
+          </button>
+        </div>
+      </div>
+      {filteredLeads.length === 0 ? (
         <div className="card text-center py-12 text-slate-500">
           <p>No leads yet.</p>
         </div>
@@ -105,7 +132,13 @@ export default function AdminLeadsPage() {
                     <a href={`mailto:${l.email}`} className="text-secondary block">{l.email}</a>
                     {l.phone}
                   </td>
-                  <td className="py-3 px-2">{l.source || "contact"}</td>
+                  <td className="py-3 px-2">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                      l.source === 'website-audit' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {l.source === 'website-audit' ? 'Website Audit' : l.source || 'Contact'}
+                    </span>
+                  </td>
                   <td className="py-3 px-2">
                     <select
                       className="input-field text-xs py-1"

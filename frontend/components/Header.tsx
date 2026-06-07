@@ -39,7 +39,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 border-b border-slate-100/80 bg-white/90 backdrop-blur-xl shadow-sm">
       <div className="container-page flex h-16 lg:h-[4.25rem] items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src="/logo.svg" alt="Encogix Technology" className="h-11 w-auto max-w-[150px] object-contain" width={150} height={44} />
+          <img src="/logo.png" alt="Encogix Technology" className="h-11 w-auto max-w-[150px] object-contain" width={150} height={44} />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1 text-sm">

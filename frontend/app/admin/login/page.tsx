@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-900 via-primary to-blue-900">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.svg" alt="Encogix" className="h-12 mx-auto brightness-0 invert mb-4" />
+          <img src="/logo.png" alt="Encogix" className="h-12 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
           <p className="text-slate-300 text-sm mt-1">Secure access for administrators</p>
         </div>
