@@ -29,5 +29,5 @@ services:
 databases:
   - name: encogix-db
     databaseName: encogix
-    user: postgres
+    user: encogix_user
     plan: free
