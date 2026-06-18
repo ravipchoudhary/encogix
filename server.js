@@ -67,6 +67,23 @@ async function main() {
   await app.prepare();
 
   const server = express();
+  if (!dev) {
+    server.set('trust proxy', true);
+    server.use((req, res, next) => {
+      try {
+        const host = req.get('host') || '';
+        const proto = (req.get('x-forwarded-proto') || req.protocol || '').toLowerCase();
+        const cleanHost = host.replace(/^www\./i, '');
+        if (proto && proto !== 'https') {
+          return res.redirect(301, 'https://' + cleanHost + req.originalUrl);
+        }
+        if (host.toLowerCase().startsWith('www.')) {
+          return res.redirect(301, 'https://' + cleanHost + req.originalUrl);
+        }
+      } catch (e) {}
+      next();
+    });
+  }
   server.use(cors({ origin: true, credentials: true }));
   server.use(express.json());
   server.use('/uploads', express.static(uploadDir));
