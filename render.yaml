@@ -5,14 +5,14 @@ services:
     plan: starter
     region: oregon
     
-    # Root directory for the service
-    rootDir: backend
+    # Don't use rootDir - we need to handle monorepo structure manually
+    # rootDir: backend
     
-    # Build command - install dependencies, Prisma will find schema via config
-    buildCommand: "npm install"
+    # Build command - Install root deps first, then backend deps, then run setup
+    buildCommand: "npm install && cd backend && npm install && npm run setup"
     
-    # Start command
-    startCommand: "npm start"
+    # Start command - Start backend server
+    startCommand: "cd backend && npm start"
     
     # Auto-deploy from git
     autoDeploy: true
@@ -25,9 +25,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      
-      - key: PRISMA_SCHEMA_PATH
-        value: /opt/render/project/src/prisma/schema.prisma
       
       - key: DATABASE_URL
         fromDatabase:
