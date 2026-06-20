@@ -1,12 +1,21 @@
 {
-  "buildCommand": "npm run build",
+  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/.next",
+  "public": true,
   "cleanUrls": true,
   "trailingSlash": false,
-  "redirects": [
-    {
-      "source": "/(?!.*\\.)",
-      "destination": "/"
+  "framework": "nextjs",
+  "functions": {
+    "frontend/pages/api/**": {
+      "memory": 1024,
+      "maxDuration": 60
     }
+  },
+  "env": [
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+    "NEXT_PUBLIC_SITE_URL"
   ]
 }
+

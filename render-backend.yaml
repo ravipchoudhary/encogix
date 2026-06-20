@@ -5,20 +5,12 @@ services:
     plan: starter
     region: oregon
     
-    # Root directory is backend
-    rootDir: backend
+    # Build configuration
+    buildCommand: "cd backend && npm install && npm run build"
+    startCommand: "cd backend && npm start"
     
-    # Build command - install and generate Prisma
-    buildCommand: npm install && npm run build && npm run db:migrate
-    
-    # Start command
-    startCommand: npm start
-    
-    # Auto-deploy from git
+    # Auto-deploy on git push
     autoDeploy: true
-    
-    # Keep alive
-    healthCheckPath: /api/health
     
     # Environment variables
     envVars:
@@ -34,16 +26,16 @@ services:
         value: admin
       
       - key: ADMIN_PASSWORD
-        sync: false
+        sync: false  # Set in Render dashboard
       
       - key: JWT_SECRET
-        sync: false
+        sync: false  # Set in Render dashboard
       
       - key: RAZORPAY_KEY_ID
-        sync: false
+        sync: false  # Set in Render dashboard
       
       - key: RAZORPAY_KEY_SECRET
-        sync: false
+        sync: false  # Set in Render dashboard
       
       - key: BACKEND_PORT
         value: "5000"
