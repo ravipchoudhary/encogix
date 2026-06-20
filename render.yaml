@@ -8,11 +8,11 @@ services:
     # Don't use rootDir - we need to handle monorepo structure manually
     # rootDir: backend
     
-    # Build command - Install root deps, generate Prisma at root, then install backend deps
-    buildCommand: "npm install && npx prisma generate --schema ./prisma/schema.prisma && cd backend && npm install"
+    # Build command for monorepo
+    buildCommand: "npm install"
     
-    # Start command - Start backend server
-    startCommand: "cd backend && npm start"
+    # Start command - Install backend then start  
+    startCommand: "cd backend && npm install && npm start"
     
     # Auto-deploy from git
     autoDeploy: true

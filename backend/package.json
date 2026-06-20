@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "setup": "node setup.js",
     "build": "node setup.js",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
