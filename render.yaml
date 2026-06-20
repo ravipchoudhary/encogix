@@ -5,25 +5,29 @@ services:
     plan: starter
     region: oregon
     
-    # Root directory is backend
+    # Root directory for the service
     rootDir: backend
     
-    # Build command - install and generate Prisma
-    buildCommand: npm install && npm run build && npm run db:migrate
+    # Build command - install dependencies, Prisma will find schema via config
+    buildCommand: "npm install"
     
     # Start command
-    startCommand: npm start
+    startCommand: "npm start"
     
     # Auto-deploy from git
     autoDeploy: true
     
-    # Keep alive
+    # Health check endpoint
     healthCheckPath: /api/health
+    healthCheckInterval: 30
     
     # Environment variables
     envVars:
       - key: NODE_ENV
         value: production
+      
+      - key: PRISMA_SCHEMA_PATH
+        value: /opt/render/project/src/prisma/schema.prisma
       
       - key: DATABASE_URL
         fromDatabase:
