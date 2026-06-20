@@ -8,8 +8,8 @@ services:
     # Don't use rootDir - we need to handle monorepo structure manually
     # rootDir: backend
     
-    # Build command - Must explicitly generate Prisma (postinstall won't run if packages are up to date)
-    buildCommand: "npm install && npx prisma generate --schema ./prisma/schema.prisma && cd backend && npm install"
+    # Build using custom script to ensure Prisma generation happens
+    buildCommand: "bash render-build.sh"
     
     # Start command  
     startCommand: "cd backend && npm start"
