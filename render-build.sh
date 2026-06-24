@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "🔧 Installing dependencies..."
+echo "� Installing root dependencies..."
 npm install
 
-echo "🔧 Installing backend dependencies..."
+echo "📦 Installing backend dependencies..."
 cd backend
 npm install
 cd ..

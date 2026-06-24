@@ -11,8 +11,8 @@ services:
     # Build command - install dependencies and generate Prisma client
     buildCommand: "npm install && cd backend && npm install && cd .. && npx prisma generate --schema ./prisma/schema.prisma"
     
-    # Start command - ensure dependencies are installed before starting
-    startCommand: "cd backend && npm install --production && npm start"
+    # Start command - install full dependencies (production will be handled by NODE_ENV)
+    startCommand: "cd backend && npm install && npm start"
     
     # Auto-deploy from git
     autoDeploy: true
