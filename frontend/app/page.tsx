@@ -1,3 +1,4 @@
+// Vercel deployment updated
 import type { Metadata } from "next";
 import Link from "next/link";
 import HomeSections from "../components/HomeSections";
