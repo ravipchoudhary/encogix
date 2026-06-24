@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       include: { assignedEmployee: { select: { id: true, name: true, employeeId: true } } },
     });
 
-    const leads = rows.map((lead) => ({
+    const leads = rows.map((lead: typeof rows[0]) => ({
       id: lead.id,
       name: lead.name,
       email: lead.email,

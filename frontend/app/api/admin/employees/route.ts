@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { id: "asc" },
     });
-    const normalized = employees.map((emp) => ({
+    const normalized = employees.map((emp: typeof employees[0]) => ({
       id: emp.id,
       employee_id: emp.employeeId,
       name: emp.name,
