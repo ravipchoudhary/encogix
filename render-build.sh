@@ -2,11 +2,11 @@
 set -e
 
 echo "� Installing root dependencies..."
-npm install
+npm ci
 
 echo "📦 Installing backend dependencies..."
 cd backend
-npm install
+npm ci
 cd ..
 
 echo "🚀 Generating Prisma client..."

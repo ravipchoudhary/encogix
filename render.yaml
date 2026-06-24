@@ -9,10 +9,10 @@ services:
     # rootDir: backend
     
     # Build command - install dependencies and generate Prisma client
-    buildCommand: "npm install && cd backend && npm install && cd .. && npx prisma generate --schema ./prisma/schema.prisma"
+    buildCommand: "npm ci && cd backend && npm ci && cd .. && npx prisma generate --schema ./prisma/schema.prisma"
     
-    # Start command - install full dependencies (production will be handled by NODE_ENV)
-    startCommand: "cd backend && npm install && npm start"
+    # Start command  
+    startCommand: "cd backend && npm start"
     
     # Auto-deploy from git
     autoDeploy: true
