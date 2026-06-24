@@ -93,6 +93,10 @@ async function main() {
     }
   });
 
+  server.get('/', (_req, res) => {
+    res.redirect('/api/health');
+  });
+
   server.post('/api/contact', async (req, res) => {
     const { name, email, phone, message, source } = req.body;
     try {

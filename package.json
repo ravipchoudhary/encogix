@@ -10,15 +10,18 @@
     "start": "node backend/server.js",
     "start:frontend": "cd frontend && npm start",
     "lint": "cd frontend && npm run lint",
-    "setup": "npm install && cd backend && npm install",
+    "generate": "npx prisma generate --schema ./prisma/schema.prisma",
+    "setup": "npm install && npm run generate && cd backend && npm install && cd ../frontend && npm install",
     "db:migrate": "cd backend && npm run db:migrate",
     "db:push": "cd backend && npm run db:push",
     "db:seed": "cd backend && npm run db:seed",
     "db:studio": "cd backend && npm run db:studio"
   },
   "prisma": {
+    "schema": "prisma/schema.prisma",
     "seed": "node prisma/seed.js"
   },
+  "postinstall": "npm run generate",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "concurrently": "^9.0.0",
