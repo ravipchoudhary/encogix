@@ -40,7 +40,7 @@ export default function AdminProjectsPage() {
   const load = () => {
     fetch("/api/projects")
       .then((r) => r.json())
-      .then(setProjects)
+      .then((data) => setProjects(Array.isArray(data) ? data : []))
       .catch(() => setProjects([]))
       .finally(() => setLoading(false));
   };

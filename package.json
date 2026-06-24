@@ -20,12 +20,11 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "concurrently": "^9.0.0",
     "@prisma/client": "^5.22.0",
+    "concurrently": "^9.0.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "prisma": "^5.22.0"
   }
 }
-
