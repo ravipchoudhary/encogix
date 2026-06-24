@@ -10,7 +10,6 @@
     "start": "node backend/server.js",
     "start:frontend": "cd frontend && npm start",
     "lint": "cd frontend && npm run lint",
-    "postinstall": "npx prisma generate --schema prisma/schema.prisma",
     "setup": "npm install && cd backend && npm install",
     "db:migrate": "cd backend && npm run db:migrate",
     "db:push": "cd backend && npm run db:push",
