@@ -62,10 +62,11 @@ function descriptionParagraphs(text: string): string[] {
     .filter(Boolean);
 }
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = await getProject(params.slug);
+  const { slug } = await params;
+  const project = await getProject(slug);
   if (!project) return { title: "Project Not Found | Encogix Technology" };
   const summary = project.description?.replace(/\s+/g, " ").trim().slice(0, 160);
   return {
@@ -80,7 +81,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
-  const project = await getProject(params.slug);
+  const { slug } = await params;
+  const project = await getProject(slug);
   if (!project) notFound();
 
   const all = await getAllProjects();

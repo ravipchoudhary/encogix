@@ -14,8 +14,9 @@ async function getBlog(id: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const blog = await getBlog(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const blog = await getBlog(id);
   if (!blog) return { title: "Blog | Encogix Technology" };
   return {
     title: `${blog.title} | Encogix Technology Blog`,
@@ -28,8 +29,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function BlogDetailPage({ params }: { params: { id: string } }) {
-  const blog = await getBlog(params.id);
+export default async function BlogDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const blog = await getBlog(id);
   if (!blog) notFound();
 
   const date = blog.createdAt || blog.created_at;
