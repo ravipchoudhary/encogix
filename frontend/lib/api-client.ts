@@ -4,7 +4,7 @@
  * Use this for all API calls to ensure proper routing in separated architecture
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://encogix.onrender.com';
 
 export interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;

@@ -12,8 +12,12 @@ const nextConfig = {
   },
 
   async rewrites() {
-    const backend = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const backend = process.env.NEXT_PUBLIC_API_URL || "https://encogix.onrender.com";
     return [
+      {
+        source: "/api/:path*",
+        destination: `${backend}/api/:path*`,
+      },
       {
         source: "/uploads/:path*",
         destination: `${backend}/uploads/:path*`,
