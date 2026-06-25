@@ -14,21 +14,46 @@ export const metadata: Metadata = {
   description: "Encogix Technology — premium website development, ecommerce, mobile apps, CRM, AI & SEO in Noida, Greater Noida & Delhi NCR. 120+ projects. Free consultation.",
 };
 
+const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+async function fetchJsonWithTimeout(url: string, options: RequestInit = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      ...options,
+    });
+
+    if (!response.ok) return null;
+    if (!(response.headers.get('content-type') || '').includes('application/json')) return null;
+    return await response.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function getHomeData() {
   let projects: Array<{ title: string; description: string | null; category: string | null; client: string | null; technologies: string | null; slug: string | null }> = [];
   let testimonials: Array<{ name: string; company: string | null; designation: string | null; rating: number; text: string }> = [];
   try {
-    const [pRes, tRes] = await Promise.all([
-      fetch('/api/projects', { next: { revalidate: 60 } }),
-      fetch('/api/testimonials', { next: { revalidate: 60 } }),
+    const [projectsData, testimonialsData] = await Promise.all([
+      fetchJsonWithTimeout(`${EXTERNAL_API_BASE}/api/projects`, { next: { revalidate: 60 } }),
+      fetchJsonWithTimeout(`${EXTERNAL_API_BASE}/api/testimonials`, { next: { revalidate: 60 } }),
     ]);
-    if (pRes.ok && (pRes.headers.get('content-type') || '').includes('application/json')) {
-      projects = (await pRes.json()).slice(0, 3);
+
+    if (Array.isArray(projectsData)) {
+      projects = projectsData.slice(0, 3);
     }
-    if (tRes.ok && (tRes.headers.get('content-type') || '').includes('application/json')) {
-      testimonials = await tRes.json();
+
+    if (Array.isArray(testimonialsData)) {
+      testimonials = testimonialsData;
     }
   } catch (_) {}
+
   return {
     clients: ["RetailKart", "HealthFirst", "EduLearn", "ManufactureHub", "PropTech", "FinServe"],
     projects,
