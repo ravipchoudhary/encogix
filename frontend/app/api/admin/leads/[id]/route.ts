@@ -17,7 +17,8 @@ function verifyAdminToken(authHeader: string | null) {
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const authHeader = req.headers.get("authorization");
   if (!verifyAdminToken(authHeader)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

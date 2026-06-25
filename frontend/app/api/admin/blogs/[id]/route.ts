@@ -5,7 +5,8 @@ import { saveUploadedFile } from "../../../../../lib/upload";
 
 const prisma = new PrismaClient();
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   if (!verifyAdminToken(req.headers.get("authorization"))) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -39,7 +40,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   if (!verifyAdminToken(req.headers.get("authorization"))) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }

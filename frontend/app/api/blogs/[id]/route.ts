@@ -22,7 +22,8 @@ function mapBlog(b: {
   };
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const id = parseInt(params.id, 10);
   if (!id) return NextResponse.json({ message: "Invalid blog id" }, { status: 400 });
 

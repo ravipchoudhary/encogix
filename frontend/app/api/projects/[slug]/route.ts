@@ -31,7 +31,8 @@ function mapProject(p: {
   };
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(_req: NextRequest, context: { params: Promise<{ slug: string }> }) {
+  const params = await context.params;
   const slug = decodeURIComponent(params.slug);
 
   try {
