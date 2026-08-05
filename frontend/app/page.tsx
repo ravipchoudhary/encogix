@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Encogix Technology — premium website development, ecommerce, mobile apps, CRM, AI & SEO in Noida, Greater Noida & Delhi NCR. 120+ projects. Free consultation.",
 };
 
-const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 async function fetchJsonWithTimeout(url: string, options: RequestInit = {}) {
   const controller = new AbortController();

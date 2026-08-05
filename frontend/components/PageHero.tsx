@@ -10,8 +10,8 @@ interface PageHeroProps {
 
 export default function PageHero({ chip, title, subtitle, children }: PageHeroProps) {
   return (
-    <section className="relative section-padding overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/60">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(56,189,248,0.12),transparent)]" />
+    <section className="relative section-padding overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-sky-100/80">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_43%),radial-gradient(circle_at_20%_70%,rgba(59,130,246,0.12),transparent_42%)] pointer-events-none" />
       <div className="container-page relative">
         {chip && <span className="chip mb-4 inline-flex">{chip}</span>}
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary tracking-tight max-w-4xl">{title}</h1>
@@ -26,11 +26,11 @@ export function CTASection({ title, desc }: { title?: string; desc?: string }) {
   return (
     <section className="section-padding">
       <div className="container-page">
-        <div className="glass-card block-3d rounded-3xl bg-gradient-to-br from-primary via-blue-900 to-primary p-8 md:p-12 text-white text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-secondary/20 rounded-full blur-3xl" />
+        <div className="glass-card block-3d rounded-3xl bg-gradient-to-br from-secondary/95 via-sky-700 to-accent p-8 md:p-12 text-white text-center relative overflow-hidden shadow-glow shadow-secondary/30">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold">{title || "Ready to start your project?"}</h2>
-            <p className="mt-3 text-slate-200">{desc || "Get a free consultation and custom quote from our Noida team."}</p>
+            <p className="mt-3 text-slate-100">{desc || "Get a free consultation and custom quote from our Noida team."}</p>
             <div className="flex flex-wrap justify-center gap-3 mt-6">
               <Link href="/contact" className="btn-primary bg-white text-primary hover:bg-slate-100 inline-flex items-center gap-2">
                 Get Free Consultation <IconArrowRight className="w-4 h-4" />

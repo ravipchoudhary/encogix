@@ -147,6 +147,63 @@ async function main() {
     }
   });
 
+  server.post('/api/testimonials', async (req, res) => {
+    const { name, company, designation, rating, text } = req.body;
+    if (!name || !text) {
+      return res.status(400).json({ message: 'Name and review text are required' });
+    }
+    try {
+      await prisma.testimonial.create({
+        data: {
+          name: String(name).trim(),
+          company: company ? String(company).trim() : null,
+          designation: designation ? String(designation).trim() : null,
+          rating: Number(rating) || 5,
+          text: String(text).trim(),
+          active: false,
+          sortOrder: 0,
+        },
+      });
+      res.status(201).json({ message: 'Testimonial submitted for review' });
+    } catch {
+      res.status(500).json({ message: 'Failed to submit testimonial' });
+    }
+  });
+
+  server.get('/api/admin/testimonials', authMiddleware, async (_req, res) => {
+    try {
+      const rows = await prisma.testimonial.findMany({ orderBy: { sortOrder: 'asc' } });
+      res.json(rows);
+    } catch {
+      res.status(500).json({ message: 'Failed to fetch testimonials' });
+    }
+  });
+
+  server.put('/api/admin/testimonials/:id', authMiddleware, async (req, res) => {
+    const { active, sortOrder } = req.body;
+    try {
+      await prisma.testimonial.update({
+        where: { id: parseInt(req.params.id, 10) },
+        data: {
+          ...(active !== undefined ? { active: Boolean(active) } : {}),
+          ...(sortOrder !== undefined ? { sortOrder: parseInt(sortOrder, 10) || 0 } : {}),
+        },
+      });
+      res.json({ message: 'Testimonial updated' });
+    } catch {
+      res.status(500).json({ message: 'Failed to update testimonial' });
+    }
+  });
+
+  server.delete('/api/admin/testimonials/:id', authMiddleware, async (req, res) => {
+    try {
+      await prisma.testimonial.delete({ where: { id: parseInt(req.params.id, 10) } });
+      res.json({ message: 'Testimonial deleted' });
+    } catch {
+      res.status(500).json({ message: 'Failed to delete testimonial' });
+    }
+  });
+
   function mapProject(p) {
     if (!p) return p;
     return {

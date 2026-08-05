@@ -13,11 +13,12 @@ const { authMiddleware, employeeAuthMiddleware, signAdminToken, signEmployeeToke
 const { uniqueProjectSlug } = require('./lib/slug');
 const { getChatbotReply } = require('./lib/chatbot-knowledge');
 
-const dev = process.env.NODE_ENV !== 'production';
+const hasProductionBuild = fs.existsSync(path.join(__dirname, 'frontend', '.next', 'BUILD_ID'));
+const dev = process.env.NODE_ENV !== 'production' || !hasProductionBuild;
 const app = next({ dev, dir: path.join(__dirname, 'frontend') });
 const handle = app.getRequestHandler();
 
-const PORT = process.env.PORT || 3000;
+const DEFAULT_PORT = Number(process.env.PORT) || 3000;
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
@@ -74,10 +75,13 @@ async function main() {
         const host = req.get('host') || '';
         const proto = (req.get('x-forwarded-proto') || req.protocol || '').toLowerCase();
         const cleanHost = host.replace(/^www\./i, '');
-        if (proto && proto !== 'https') {
+        const normalizedHost = cleanHost.toLowerCase().replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+        const isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(normalizedHost);
+
+        if (!isLocalHost && proto && proto !== 'https') {
           return res.redirect(301, 'https://' + cleanHost + req.originalUrl);
         }
-        if (host.toLowerCase().startsWith('www.')) {
+        if (!isLocalHost && host.toLowerCase().startsWith('www.')) {
           return res.redirect(301, 'https://' + cleanHost + req.originalUrl);
         }
       } catch (e) {}
@@ -1238,9 +1242,27 @@ async function main() {
 
   server.all('*', (req, res) => handle(req, res));
 
-  server.listen(PORT, () => {
-    console.log(`Encogix running at http://localhost:${PORT}`);
+  const startServer = (port) => new Promise((resolve, reject) => {
+    const listener = server.listen(port, () => {
+      if (port !== DEFAULT_PORT) {
+        console.log(`Port ${DEFAULT_PORT} is busy, using ${port} instead.`);
+      }
+      console.log(`Encogix running at http://localhost:${port}`);
+      resolve();
+    });
+
+    listener.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE') {
+        if (port < DEFAULT_PORT + 20) {
+          startServer(port + 1).then(resolve).catch(reject);
+          return;
+        }
+      }
+      reject(err);
+    });
   });
+
+  await startServer(DEFAULT_PORT);
 }
 
 main().catch((err) => {

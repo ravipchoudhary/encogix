@@ -32,7 +32,7 @@ export default async function PortfolioPage() {
 
         {projects.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((p: { id: number; slug?: string; title: string; description: string; image: string | null; category: string | null }) => (
+            {projects.map((p: { id: number; slug?: string; title: string; description: string; image: string | null; category: string | null; industry?: string | null; client?: string | null }) => (
               <Link
                 key={p.id}
                 href={projectPath(p.slug, p.title)}
@@ -49,6 +49,8 @@ export default async function PortfolioPage() {
                 )}
                 {p.category && <span className="chip mb-2 w-fit">{p.category}</span>}
                 <h2 className="text-lg font-semibold text-primary group-hover:text-secondary transition-colors">{p.title}</h2>
+                {p.industry && <p className="text-xs text-slate-500 mt-1">Industry: {p.industry}</p>}
+                {p.client && <p className="text-xs text-slate-500 mt-1">Client: {p.client}</p>}
                 <p className="text-sm text-slate-600 line-clamp-3 flex-1">{p.description}</p>
                 <span className="mt-4 text-sm font-semibold text-secondary inline-flex items-center gap-1">
                   View project <IconArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

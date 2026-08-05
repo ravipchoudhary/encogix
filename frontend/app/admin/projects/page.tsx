@@ -14,6 +14,8 @@ interface Project {
   client: string | null;
   technologies: string | null;
   project_url: string | null;
+  industry: string | null;
+  results: string | null;
 }
 
 function authHeaders() {
@@ -33,6 +35,8 @@ export default function AdminProjectsPage() {
     client: "",
     technologies: "",
     project_url: "",
+    industry: "",
+    results: "",
   });
   const [image, setImage] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -55,7 +59,7 @@ export default function AdminProjectsPage() {
   }, [router]);
 
   const openAdd = () => {
-    setForm({ title: "", description: "", category: "", client: "", technologies: "", project_url: "" });
+    setForm({ title: "", description: "", category: "", client: "", technologies: "", project_url: "", industry: "", results: "" });
     setImage(null);
     setModal({ open: true, project: null });
   };
@@ -68,6 +72,8 @@ export default function AdminProjectsPage() {
       client: project.client || "",
       technologies: project.technologies || "",
       project_url: project.project_url || "",
+      industry: project.industry || "",
+      results: project.results || "",
     });
     setImage(null);
     setModal({ open: true, project });
@@ -83,6 +89,8 @@ export default function AdminProjectsPage() {
     fd.append("client", form.client);
     fd.append("technologies", form.technologies);
     fd.append("project_url", form.project_url);
+    fd.append("industry", form.industry);
+    fd.append("results", form.results);
     if (image) fd.append("image", image);
     const url = modal.project ? `/api/admin/projects/${modal.project.id}` : "/api/admin/projects";
     const method = modal.project ? "PUT" : "POST";
@@ -181,6 +189,20 @@ export default function AdminProjectsPage() {
               <div>
                 <label className="label-field">Technologies</label>
                 <input value={form.technologies} onChange={(e) => setForm((f) => ({ ...f, technologies: e.target.value }))} className="input-field" placeholder="React, Node.js, AWS (comma-separated)" />
+              </div>
+              <div>
+                <label className="label-field">Industry</label>
+                <input value={form.industry} onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))} className="input-field" placeholder="Fintech, Healthcare, SaaS" />
+              </div>
+              <div>
+                <label className="label-field">Results</label>
+                <textarea
+                  value={form.results}
+                  onChange={(e) => setForm((f) => ({ ...f, results: e.target.value }))}
+                  rows={3}
+                  className="input-field"
+                  placeholder="Key outcomes or metrics from this project"
+                />
               </div>
               <div>
                 <label className="label-field">Live project URL</label>

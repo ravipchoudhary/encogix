@@ -125,7 +125,7 @@ export default function AdminLeadsPage() {
               </tr>
             </thead>
             <tbody>
-              {leads.map((l) => (
+              {filteredLeads.map((l) => (
                 <tr key={l.id} className="border-b border-slate-100 align-top">
                   <td className="py-3 px-2 font-medium">{l.name || "—"}</td>
                   <td className="py-3 px-2">

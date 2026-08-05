@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import Link from "next/link";
 import PageHero, { CTASection } from "../../components/PageHero";
 import { SERVICES } from "../../lib/services-data";
+import { SERVICE_LINKS } from "../../lib/site-config";
 import { IconArrowRight, IconGlobe, IconSmartphone, IconBriefcase, IconBrain, IconBarChart3, IconShoppingBag } from "../../components/Icons";
 
 export const metadata: Metadata = {
@@ -21,6 +22,9 @@ const ICONS: Record<string, ComponentType<{ className?: string }>> = {
 
 export default function ServicesPage() {
   const serviceList = Object.values(SERVICES);
+  const extraServiceLinks = SERVICE_LINKS.filter(
+    (link) => !serviceList.some((service) => `/services/${service.slug}` === link.href)
+  );
 
   return (
     <>
@@ -49,7 +53,7 @@ export default function ServicesPage() {
                   <Icon className="w-7 h-7" />
                 </div>
                 <h2 className="text-lg font-bold text-primary group-hover:text-secondary transition-colors">{s.title}</h2>
-                <p className="text-sm text-slate-600 mt-2 flex-1 line-clamp-3">{s.intro.slice(0, 120)}…</p>
+                <p className="text-sm text-slate-600 mt-2 flex-1 leading-relaxed">{s.intro}</p>
                 <p className="text-sm font-semibold text-secondary mt-4 inline-flex items-center gap-1">
                   From {s.pricingFrom} <IconArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </p>
@@ -63,8 +67,14 @@ export default function ServicesPage() {
         <div className="container-page">
           <h2 className="text-2xl font-bold text-primary mb-6">Also Available</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {["Hosting & Domain", "Website Maintenance", "WhatsApp Marketing API", "Complaint Management Software", "AI Calling Agent", "UI/UX Design", "Internship Program", "IT Consulting"].map((item) => (
-              <div key={item} className="glass-card rounded-xl px-4 py-3 text-sm font-medium text-slate-700">{item}</div>
+            {extraServiceLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="glass-card rounded-3xl px-4 py-5 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-all"
+              >
+                {link.label}
+              </Link>
             ))}
           </div>
         </div>

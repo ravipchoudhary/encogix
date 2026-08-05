@@ -20,6 +20,8 @@ export interface Project {
   client: string | null;
   technologies: string | null;
   project_url: string | null;
+  industry: string | null;
+  results: string | null;
 }
 
 async function getProject(slug: string): Promise<Project | null> {
@@ -146,6 +148,13 @@ export default async function ProjectDetailPage({ params }: Props) {
               </div>
             </section>
 
+            {project.results && (
+              <section className="card card-3d block-3d">
+                <h2 className="text-xl font-semibold text-primary mb-4">Results</h2>
+                <p className="text-slate-600 whitespace-pre-line">{project.results}</p>
+              </section>
+            )}
+
             {techList.length > 0 && (
               <section className="card card-3d block-3d lg:hidden">
                 <h2 className="text-lg font-semibold text-primary mb-3">Technologies</h2>
@@ -170,10 +179,22 @@ export default async function ProjectDetailPage({ params }: Props) {
                     <dd className="mt-1 text-primary">{project.category}</dd>
                   </div>
                 )}
+                {project.industry && (
+                  <div>
+                    <dt className="text-slate-500 font-medium">Service Industry</dt>
+                    <dd className="mt-1 text-primary">{project.industry}</dd>
+                  </div>
+                )}
                 {project.client && (
                   <div>
                     <dt className="text-slate-500 font-medium">Client</dt>
                     <dd className="mt-1 text-primary">{project.client}</dd>
+                  </div>
+                )}
+                {project.results && (
+                  <div>
+                    <dt className="text-slate-500 font-medium">Results</dt>
+                    <dd className="mt-1 text-primary whitespace-pre-line">{project.results}</dd>
                   </div>
                 )}
                 {techList.length > 0 && (
