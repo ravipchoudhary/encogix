@@ -57,7 +57,7 @@ npm run start
 
 Set production env:
 
-- `DATABASE_URL` — PostgreSQL connection string
+- `MYSQL_URL` — MySQL connection string
 - `JWT_SECRET` — strong random secret
 - `NEXT_PUBLIC_SITE_URL` — `https://www.encogix.com`
 - `NEXT_PUBLIC_API_URL` — same as public site URL (for SSR)
@@ -68,8 +68,7 @@ Set production env:
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Development server |
-| `npm run build` | Prisma generate + Next.js build |
+| `npm run build` | Next.js production build |
 | `npm run start` | Production server |
 | `npm run db:push` | Push schema to database |
 | `npm run db:seed` | Seed admin, testimonials, sample projects |
-| `npm run db:studio` | Prisma Studio GUI |

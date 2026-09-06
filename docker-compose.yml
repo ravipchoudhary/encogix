@@ -1,15 +1,14 @@
 services:
-  postgres:
-    image: postgres:16-alpine
+  mysql:
+    image: mysql:8.4
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: encogix
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: encogix
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - encogix_pg_data:/var/lib/postgresql/data
+      - encogix_mysql_data:/var/lib/mysql
 
 volumes:
-  encogix_pg_data:
+  encogix_mysql_data:

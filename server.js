@@ -8,14 +8,14 @@ const next = require('next');
 const cors = require('cors');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
-const { prisma } = require('./lib/prisma');
+const { db: prisma } = require('./lib/mysql');
 const { authMiddleware, employeeAuthMiddleware, signAdminToken, signEmployeeToken } = require('./lib/auth');
 const { uniqueProjectSlug } = require('./lib/slug');
 const { getChatbotReply } = require('./lib/chatbot-knowledge');
 
-const hasProductionBuild = fs.existsSync(path.join(__dirname, 'frontend', '.next', 'BUILD_ID'));
+const hasProductionBuild = fs.existsSync(path.join(__dirname, '.next', 'BUILD_ID'));
 const dev = process.env.NODE_ENV !== 'production' || !hasProductionBuild;
-const app = next({ dev, dir: path.join(__dirname, 'frontend') });
+const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
 
 const DEFAULT_PORT = Number(process.env.PORT) || 3000;
@@ -55,10 +55,10 @@ async function seedDefaultAdmin() {
 }
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
+  if (!process.env.MYSQL_URL && !process.env.DATABASE_URL) {
     throw new Error(
-      'DATABASE_URL is required. Example:\n' +
-      'DATABASE_URL="postgresql://user:password@localhost:5432/encogix?schema=public"'
+      'MYSQL_URL is required. Example:\n' +
+      'MYSQL_URL="mysql://user:password@localhost:3306/encogix"'
     );
   }
 
@@ -68,6 +68,7 @@ async function main() {
   await app.prepare();
 
   const server = express();
+  server.disable('x-powered-by');
   if (!dev) {
     server.set('trust proxy', true);
     server.use((req, res, next) => {

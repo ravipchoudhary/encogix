@@ -6,8 +6,8 @@ services:
     region: oregon
     
     # Build configuration
-    buildCommand: "cd backend && npm install && npm run build"
-    startCommand: "cd backend && npm start"
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
     
     # Auto-deploy on git push
     autoDeploy: true

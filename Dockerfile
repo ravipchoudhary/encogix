@@ -5,17 +5,16 @@ WORKDIR /app
 
 # Copy all files
 COPY package*.json ./
-COPY prisma/ ./prisma/
-COPY frontend/ ./frontend/
-COPY backend/ ./backend/ 2>/dev/null || true
+COPY app/ ./app/
+COPY components/ ./components/
+COPY public/ ./public/
+COPY next.config.mjs next-env.d.ts tsconfig.json postcss.config.js tailwind.config.js ./
+COPY schema.sql setup.js seed.js ./
 COPY lib/ ./lib/
 COPY server.js .
 
 # Install dependencies
 RUN npm ci
-
-# Generate Prisma client
-RUN npm run postinstall
 
 # Build Next.js frontend
 RUN npm run build
@@ -30,9 +29,8 @@ RUN apk add --no-cache dumb-init
 
 # Copy from builder
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/frontend/.next ./frontend/.next
-COPY --from=builder /app/frontend/public ./frontend/public
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/server.js .
