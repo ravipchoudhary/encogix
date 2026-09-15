@@ -6,7 +6,7 @@ import { IconMail, IconPhone, IconMapPin, IconSend } from "../../components/Icon
 const offices = [
   {
     city: "Noida",
-    address: "Gaur City Center, Greater Noida, Uttar Pradesh, 201318",
+    address: "T3, NX ONE, Greater Noida West, Uttar Pradesh, 201318",
   },
   {
     city: "Bihar",

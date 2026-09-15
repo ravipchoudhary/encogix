@@ -23,7 +23,7 @@ const milestones = [
   {
     year: "2025",
     title: "Greater Noida branch opened",
-    text: "To work more closely with businesses in the Delhi NCR region, Encogix opened a new branch at Gaur City Center, Greater Noida, Uttar Pradesh.",
+    text: "To work more closely with businesses in the Delhi NCR region, Encogix opened a new branch at T3, NX ONE, Greater Noida West, Uttar Pradesh.",
   },
   {
     year: "2026",

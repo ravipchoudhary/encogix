@@ -11,8 +11,8 @@ export function LocalBusinessSchema() {
     email: "contact@encogix.com",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Gaur City Center, Greater Noida",
-      addressLocality: "Noida",
+      streetAddress: "T3, NX ONE, Greater Noida West",
+      addressLocality: "Greater Noida West",
       addressRegion: "Uttar Pradesh",
       postalCode: "201318",
       addressCountry: "IN",

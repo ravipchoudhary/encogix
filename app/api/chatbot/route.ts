@@ -4,7 +4,7 @@ import { getChatbotReply as getSharedChatbotReply } from "../../../lib/chatbot-k
 
 const PHONE = "+91 9431607346";
 const EMAIL = "contact@encogix.com";
-const ADDRESS = "Gaur City Center, Greater Noida, Uttar Pradesh, 201318";
+const ADDRESS = "T3, NX ONE, Greater Noida West, Uttar Pradesh, 201318";
 
 const KNOWLEDGE = {
   website: {

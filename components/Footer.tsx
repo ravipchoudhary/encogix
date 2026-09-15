@@ -67,7 +67,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-slate-300">
               <li>
                 <span className="block font-medium text-white/90">Noida</span>
-                Gaur City Center, Greater Noida, Uttar Pradesh, 201318
+                T3, NX ONE, Greater Noida West, Uttar Pradesh, 201318
               </li>
               <li className="pt-2">
                 <span className="block font-medium text-white/90">Bihar</span>
@@ -85,7 +85,7 @@ export default function Footer() {
           <div>
             <a href="https://www.linkedin.com/company/encogix-technology" target="_blank" rel="noopener noreferrer" className="hover:text-white">LinkedIn</a>
             <span className="mx-2">·</span>
-            <a href="https://maps.google.com/?q=Gaur+City+Center+Greater+Noida" target="_blank" rel="noopener noreferrer" className="hover:text-white">Google Maps</a>
+            <a href="https://maps.google.com/?q=T3+NX+ONE+Greater+Noida+West+Uttar+Pradesh" target="_blank" rel="noopener noreferrer" className="hover:text-white">Google Maps</a>
           </div>
         </div>
 

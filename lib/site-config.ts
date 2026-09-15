@@ -6,10 +6,10 @@ export const SITE = {
   phone2: "+91 7633926879",
   email: "contact@encogix.com",
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "919431607346",
-  address: "Gaur City Center, Greater Noida, Uttar Pradesh, 201318",
+  address: "T3, NX ONE, Greater Noida West, Uttar Pradesh, 201318",
   addressBihar: "Near BM College, Rahika, Madhubani, Bihar, 847211",
   linkedin: "https://www.linkedin.com/company/encogix-technology",
-  mapsUrl: "https://maps.google.com/?q=Gaur+City+Center+Greater+Noida",
+  mapsUrl: "https://maps.google.com/?q=T3+NX+ONE+Greater+Noida+West+Uttar+Pradesh",
   tagline: "Website · App · CRM · AI · SEO — Noida & Delhi NCR",
 };
 

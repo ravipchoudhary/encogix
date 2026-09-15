@@ -5,10 +5,10 @@ import { useEffect, useRef } from "react";
 const OFFICES = [
   {
     name: "Noida Office",
-    address: "Gaur City Center, Greater Noida, Uttar Pradesh, 201318",
+    address: "T3, NX ONE, Greater Noida West, Uttar Pradesh, 201318",
     lat: 28.4743,
     lng: 77.4948,
-    link: "https://maps.google.com/?q=Gaur+City+Center+Greater+Noida+Uttar+Pradesh",
+    link: "https://maps.google.com/?q=T3+NX+ONE+Greater+Noida+West+Uttar+Pradesh",
   },
   {
     name: "Bihar Office",
