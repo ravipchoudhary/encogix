@@ -41,7 +41,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open http://localhost:3000
+Open http://localhost:8000
 
 - **Admin:** `/admin/login` (default from `.env`: `ADMIN_USERNAME` / `ADMIN_PASSWORD`)
 - **Employee:** `/employee/login` (create employees in Admin → Employees first)

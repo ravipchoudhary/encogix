@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 8000
       MYSQL_URL: mysql://root:${DB_PASSWORD:-password}@mysql:3306/encogix
       NEXT_PUBLIC_SITE_URL: https://encogix.com
       NEXT_PUBLIC_WHATSAPP: 919431607346
@@ -37,14 +37,14 @@ services:
       CASHFREE_RETURN_URL: ${CASHFREE_RETURN_URL:-https://www.encogix.com/payment/success}
       NEXT_PUBLIC_CASHFREE_ENV: ${CASHFREE_ENV:-sandbox}
     ports:
-      - "3000:3000"
+      - "8000:8000"
     depends_on:
       mysql:
         condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3

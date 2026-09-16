@@ -16,7 +16,7 @@ const dev = process.env.NODE_ENV !== 'production' || !hasProductionBuild;
 const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
 
-const DEFAULT_PORT = Number(process.env.PORT) || 3000;
+const DEFAULT_PORT = Number(process.env.PORT) || 8000;
 const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID;
 const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
 const CASHFREE_ENV = process.env.CASHFREE_ENV === 'production' ? 'production' : 'sandbox';

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fetchJsonWithTimeout(url: string, options: RequestInit = {}) {
   const controller = new AbortController();
