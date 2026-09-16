@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { db as prisma } from "../../../lib/mysql";
+import { slugifyTitle } from "../../../lib/slug";
+
+export const dynamic = "force-dynamic";
 
 async function getBlog(id: string) {
   try {
-    const res = await fetch(`/api/blogs/${id}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) return null;
-    return res.json();
+    const numericId = parseInt(id, 10);
+    const blog = /^\d+$/.test(id)
+      ? await prisma.blog.findUnique({ where: { id: numericId } })
+      : (await prisma.blog.findMany({ orderBy: { createdAt: "desc" } })).find(
+          (candidate: { title: string | null }) => slugifyTitle(candidate.title || "") === id
+        );
+    return blog ? { ...blog, created_at: blog.createdAt } : null;
   } catch (_) {
     return null;
   }

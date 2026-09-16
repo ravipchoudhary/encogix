@@ -4,6 +4,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
 const rootEnvPath = path.join(__dirname, ".env");
 if (fs.existsSync(rootEnvPath)) {
   for (const line of fs.readFileSync(rootEnvPath, "utf8").split(/\r?\n/)) {
@@ -15,6 +16,7 @@ if (fs.existsSync(rootEnvPath)) {
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  distDir: isProductionBuild || process.env.NODE_ENV === "production" ? ".next" : ".next-dev",
 
   images: {
     unoptimized: true,

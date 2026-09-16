@@ -4,35 +4,84 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+type PaymentDetails = {
+  payment_id: string;
+  order_id: string;
+  amount: string;
+  status: 'success' | 'failed' | 'pending';
+};
+
 export default function PaymentSuccessContent() {
   const searchParams = useSearchParams();
-  const [details, setDetails] = useState({
+  const [details, setDetails] = useState<PaymentDetails>({
     payment_id: '',
     order_id: '',
     amount: '',
     status: 'success',
   });
+  const [applicationMessage, setApplicationMessage] = useState('');
 
   useEffect(() => {
     const paymentId = searchParams.get('payment_id');
-    const orderId = searchParams.get('order_id');
+    const orderId = searchParams.get('order_id') || '';
     const amount = searchParams.get('amount');
-    const status = searchParams.get('status') || 'success';
-
+    const provider = searchParams.get('provider');
+    const status = searchParams.get('status') || (provider === 'cashfree' ? 'pending' : 'success');
     setDetails({
       payment_id: paymentId || '',
-      order_id: orderId || '',
+      order_id: orderId,
       amount: amount || '0',
-      status: status as 'success' | 'failed',
+      status: status as 'success' | 'failed' | 'pending',
     });
+
+    const submitPendingApplication = () => {
+      if (typeof window === 'undefined') return;
+      const pending = sessionStorage.getItem('pending_internship_application');
+      if (!pending) return;
+      fetch('/api/internships/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: pending,
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error('Application submission failed');
+          sessionStorage.removeItem('pending_internship_application');
+          setApplicationMessage('Your internship application has been submitted successfully.');
+        })
+        .catch(() => setApplicationMessage('Payment succeeded, but application submission needs to be retried.'));
+    };
+
+    if (provider === 'cashfree' && orderId) {
+      fetch('/api/payment/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId }),
+      })
+        .then((response) => response.json())
+        .then((verification) => {
+          setDetails((current) => ({
+            ...current,
+            payment_id: verification.payment_id || current.payment_id,
+            amount: String(verification.amount || current.amount),
+            status: verification.success ? 'success' : 'failed',
+          }));
+          if (verification.success) submitPendingApplication();
+        })
+        .catch(() => setDetails((current) => ({ ...current, status: 'failed' })));
+    } else if (status === 'success') {
+      submitPendingApplication();
+    }
   }, [searchParams]);
 
   const isSuccess = details.status === 'success';
+  const isPending = details.status === 'pending';
   const formattedAmount = parseFloat(details.amount || '0').toFixed(2);
 
   return (
     <>
-      {isSuccess ? (
+      {isPending ? (
+        <div className="text-center py-12 text-gray-600">Verifying your Cashfree payment...</div>
+      ) : isSuccess ? (
         <div className="space-y-8">
           {/* Amount Section */}
           <div className="text-center border-b border-gray-200 pb-8">
@@ -77,6 +126,7 @@ export default function PaymentSuccessContent() {
               <p className="text-green-700 text-sm">Your payment has been successfully processed and your order is confirmed.</p>
             </div>
           </div>
+          {applicationMessage && <p className="text-center text-sm text-green-700">{applicationMessage}</p>}
 
           {/* Receipt Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">

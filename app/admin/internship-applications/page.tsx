@@ -8,12 +8,12 @@ interface InternshipApp {
   name: string;
   email: string;
   phone: string;
-  internship_type: string;
+  internshipType: string;
   college: string;
   course: string;
   resume: string;
   message: string;
-  created_at: string;
+  createdAt: string;
 }
 
 function authHeaders() {
@@ -79,9 +79,9 @@ export default function AdminInternshipApplicationsPage() {
                 <div>
                   <h3 className="font-semibold text-primary">{a.name}</h3>
                   <p className="text-sm text-slate-500">{a.email}</p>
-                  <p className="text-sm text-slate-600 mt-1">{a.internship_type || "—"} • {a.college || "—"}</p>
+                  <p className="text-sm text-slate-600 mt-1">{a.internshipType || "—"} • {a.college || "—"}</p>
                 </div>
-                <span className="text-xs text-slate-400 shrink-0">{a.created_at ? new Date(a.created_at).toLocaleDateString() : ""}</span>
+                <span className="text-xs text-slate-400 shrink-0">{a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}</span>
               </div>
             </div>
           ))}
@@ -98,7 +98,7 @@ export default function AdminInternshipApplicationsPage() {
               <p><span className="font-medium text-slate-600">Name:</span> {selected.name}</p>
               <p><span className="font-medium text-slate-600">Email:</span> <a href={`mailto:${selected.email}`} className="text-secondary">{selected.email}</a></p>
               <p><span className="font-medium text-slate-600">Phone:</span> {selected.phone || "—"}</p>
-              <p><span className="font-medium text-slate-600">Area of Interest:</span> {selected.internship_type || "—"}</p>
+              <p><span className="font-medium text-slate-600">Area of Interest:</span> {selected.internshipType || "—"}</p>
               <p><span className="font-medium text-slate-600">College:</span> {selected.college || "—"}</p>
               <p><span className="font-medium text-slate-600">Course:</span> {selected.course || "—"}</p>
               {selected.resume && (
@@ -108,7 +108,7 @@ export default function AdminInternshipApplicationsPage() {
                 </p>
               )}
               <p><span className="font-medium text-slate-600">Message:</span> {selected.message || "—"}</p>
-              <p className="text-slate-500 text-xs">{selected.created_at ? new Date(selected.created_at).toLocaleString() : ""}</p>
+              <p className="text-slate-500 text-xs">{selected.createdAt ? new Date(selected.createdAt).toLocaleString() : ""}</p>
             </div>
           </div>
         </div>

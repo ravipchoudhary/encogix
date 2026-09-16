@@ -31,8 +31,11 @@ services:
       NEXT_PUBLIC_CONTACT_EMAIL: contact@encogix.com
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
-      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
-      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      CASHFREE_APP_ID: ${CASHFREE_APP_ID:-}
+      CASHFREE_SECRET_KEY: ${CASHFREE_SECRET_KEY:-}
+      CASHFREE_ENV: ${CASHFREE_ENV:-sandbox}
+      CASHFREE_RETURN_URL: ${CASHFREE_RETURN_URL:-https://www.encogix.com/payment/success}
+      NEXT_PUBLIC_CASHFREE_ENV: ${CASHFREE_ENV:-sandbox}
     ports:
       - "3000:3000"
     depends_on:

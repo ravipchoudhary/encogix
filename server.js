@@ -6,11 +6,9 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const next = require('next');
 const cors = require('cors');
-const Razorpay = require('razorpay');
-const crypto = require('crypto');
 const { db: prisma } = require('./lib/mysql');
-const { authMiddleware, employeeAuthMiddleware, signAdminToken, signEmployeeToken } = require('./lib/auth');
-const { uniqueProjectSlug } = require('./lib/slug');
+const { authMiddleware, employeeAuthMiddleware, signAdminToken, signEmployeeToken } = require('./lib/server-auth');
+const { uniqueProjectSlug } = require('./lib/server-slug');
 const { getChatbotReply } = require('./lib/chatbot-knowledge');
 
 const hasProductionBuild = fs.existsSync(path.join(__dirname, '.next', 'BUILD_ID'));
@@ -19,12 +17,13 @@ const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
 
 const DEFAULT_PORT = Number(process.env.PORT) || 3000;
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET
-  ? new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET })
-  : null;
+const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID;
+const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
+const CASHFREE_ENV = process.env.CASHFREE_ENV === 'production' ? 'production' : 'sandbox';
+const CASHFREE_API_URL = CASHFREE_ENV === 'production'
+  ? 'https://api.cashfree.com/pg'
+  : 'https://sandbox.cashfree.com/pg';
+const CASHFREE_API_VERSION = '2026-01-01';
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -1204,42 +1203,76 @@ async function main() {
     }
   });
 
-  if (razorpay) {
-    server.post('/api/payment/create-order', async (req, res) => {
-      const { amount, currency = 'INR', receipt } = req.body;
-      if (!amount || amount <= 0) return res.status(400).json({ message: 'Valid amount is required' });
-      try {
-        const order = await razorpay.orders.create({
-          amount: amount * 100,
-          currency,
-          receipt: receipt || `receipt_${Date.now()}`,
-        });
-        res.json({ id: order.id, amount: order.amount, currency: order.currency, receipt: order.receipt });
-      } catch (error) {
-        console.error('Error creating Razorpay order:', error);
-        res.status(500).json({ message: 'Failed to create payment order' });
+  server.post('/api/payment/create-order', async (req, res) => {
+    const { amount, currency = 'INR', customer_name, customer_email, customer_phone } = req.body || {};
+    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
+      return res.status(503).json({ message: 'Cashfree payment is not configured' });
+    }
+    if (!amount || amount <= 0) return res.status(400).json({ message: 'Valid amount is required' });
+    try {
+      const orderId = `encogix_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      const configuredReturnUrl = process.env.CASHFREE_RETURN_URL || '';
+      const returnUrl = /^https:\/\//i.test(configuredReturnUrl)
+        ? `${configuredReturnUrl}${configuredReturnUrl.includes('?') ? '&' : '?'}provider=cashfree&amount=${encodeURIComponent(amount)}&order_id=${encodeURIComponent(orderId)}`
+        : null;
+      const response = await fetch(`${CASHFREE_API_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-version': CASHFREE_API_VERSION,
+          'x-client-id': CASHFREE_APP_ID,
+          'x-client-secret': CASHFREE_SECRET_KEY,
+          'x-request-id': orderId,
+          'x-idempotency-key': orderId,
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          order_amount: Number(amount),
+          order_currency: currency,
+          customer_details: {
+            customer_id: `customer_${Date.now()}`,
+            customer_name: customer_name || 'Encogix Customer',
+            customer_email: customer_email || 'customer@encogix.com',
+            customer_phone: customer_phone || '9999999999',
+          },
+          ...(returnUrl ? { order_meta: { return_url: returnUrl } } : {}),
+        }),
+      });
+      const order = await response.json();
+      if (!response.ok) {
+        console.error('Cashfree order creation failed:', order);
+        return res.status(response.status).json({ message: order.message || 'Failed to create payment order' });
       }
-    });
+      res.json({ order_id: order.order_id, payment_session_id: order.payment_session_id, amount: order.order_amount, currency: order.order_currency });
+    } catch (error) {
+      console.error('Error creating Cashfree order:', error);
+      res.status(500).json({ message: 'Failed to create payment order' });
+    }
+  });
 
-    server.post('/api/payment/verify', async (req, res) => {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-        return res.status(400).json({ message: 'Missing payment verification data' });
-      }
-      try {
-        const sign = razorpay_order_id + '|' + razorpay_payment_id;
-        const expectedSign = crypto.createHmac('sha256', RAZORPAY_KEY_SECRET).update(sign).digest('hex');
-        if (razorpay_signature === expectedSign) {
-          res.json({ success: true, message: 'Payment verified successfully', payment_id: razorpay_payment_id });
-        } else {
-          res.status(400).json({ success: false, message: 'Payment verification failed' });
-        }
-      } catch (error) {
-        console.error('Error verifying payment:', error);
-        res.status(500).json({ message: 'Payment verification error' });
-      }
-    });
-  }
+  server.post('/api/payment/verify', async (req, res) => {
+    const { order_id } = req.body || {};
+    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
+      return res.status(503).json({ message: 'Cashfree payment is not configured' });
+    }
+    if (!order_id) return res.status(400).json({ message: 'Cashfree order ID is required' });
+    try {
+      const response = await fetch(`${CASHFREE_API_URL}/orders/${encodeURIComponent(order_id)}`, {
+        headers: {
+          'x-api-version': CASHFREE_API_VERSION,
+          'x-client-id': CASHFREE_APP_ID,
+          'x-client-secret': CASHFREE_SECRET_KEY,
+          'x-request-id': order_id,
+        },
+      });
+      const order = await response.json();
+      if (!response.ok) return res.status(response.status).json({ success: false, message: order.message || 'Payment verification failed' });
+      res.json({ success: order.order_status === 'PAID', order_id: order.order_id, payment_id: order.cf_order_id, status: order.order_status, amount: order.order_amount });
+    } catch (error) {
+      console.error('Error verifying Cashfree payment:', error);
+      res.status(500).json({ message: 'Payment verification error' });
+    }
+  });
 
   server.all('*', (req, res) => handle(req, res));
 

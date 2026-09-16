@@ -56,7 +56,7 @@ export default function RootLayout({
         <Footer />
         <StickyCTA />
         <ChatbotWidget />
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+        <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
       </body>
     </html>
   );

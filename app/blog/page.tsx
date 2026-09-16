@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { IconFileText, IconArrowRight } from "../../components/Icons";
+import { db as prisma } from "../../lib/mysql";
+import { slugifyTitle } from "../../lib/slug";
+
+export const dynamic = "force-dynamic";
 
 async function getBlogs() {
   try {
-    const res = await fetch('/api/blogs', { cache: "no-store" });
-    if (!res.ok) return [];
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) return [];
-    return res.json();
+    const blogs = await prisma.blog.findMany({ orderBy: { createdAt: "desc" } });
+    return blogs.map((blog: { createdAt: Date }) => ({ ...blog, created_at: blog.createdAt }));
   } catch (_) {
     return [];
   }
@@ -32,7 +33,7 @@ export default async function BlogPage() {
         {blogs.length > 0 ? (
           <div className="space-y-6">
             {blogs.map((b: { id: number; title: string; content: string; author: string | null; image: string | null; created_at: string | null }) => (
-              <Link key={b.id} href={`/blog/${b.id}`} className="card block hover:shadow-md transition overflow-hidden">
+              <Link key={b.id} href={`/blog/${slugifyTitle(b.title || `blog-${b.id}`)}`} className="card block hover:shadow-md transition overflow-hidden">
                 {b.image && (
                   <div className="h-48 -mx-6 -mt-6 mb-4 bg-slate-100">
                     <img src={b.image} alt={b.title} className="w-full h-full object-cover" loading="lazy" />

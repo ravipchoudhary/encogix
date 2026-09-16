@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { IconGraduationCap, IconSend } from "../../components/Icons";
 
 const areasOfInterest = [
@@ -34,6 +35,7 @@ const courseTypes = [
 ];
 
 export default function InternshipPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: "", email: "", phone: "", internship_type: "web", other_interest: "",
     college: "", course: "", message: "",
@@ -43,27 +45,20 @@ export default function InternshipPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
-    const fd = new FormData();
     const finalType = form.internship_type === "other"
       ? (form.other_interest?.trim() || "Other")
       : (areasOfInterest.find((a) => a.id === form.internship_type)?.label || form.internship_type);
-    fd.append("access_key", "36fa8b83-2560-4e33-997a-78b0ed8eaa49");
-    fd.append("internship_type", finalType);
-    fd.append("name", form.name);
-    fd.append("email", form.email);
-    if (form.phone) fd.append("phone", form.phone);
-    if (form.college) fd.append("college", form.college);
-    if (form.course) fd.append("course", form.course);
-    if (form.message) fd.append("message", form.message);
     try {
-      const res = await fetch("https://api.web3forms.com/submit", { method: "POST", body: fd });
-      const data = await res.json();
-      if (data.success) {
-        setStatus("ok");
-        setForm({ name: "", email: "", phone: "", internship_type: "web", other_interest: "", college: "", course: "", message: "" });
-      } else {
-        setStatus("err");
-      }
+      sessionStorage.setItem("pending_internship_application", JSON.stringify({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        internship_type: finalType,
+        college: form.college,
+        course: form.course,
+        message: form.message,
+      }));
+      router.push("/payment?type=internship&amount=999");
     } catch {
       setStatus("err");
     }
@@ -180,7 +175,7 @@ export default function InternshipPage() {
               />
             </div>
             <button type="submit" disabled={status === "sending"} className="btn-primary">
-              {status === "sending" ? "Submitting…" : "Apply Now"}
+              {status === "sending" ? "Opening payment…" : "Apply Now - Pay ₹999"}
             </button>
             {status === "ok" && <p className="text-green-600 text-sm">Application submitted successfully.</p>}
             {status === "err" && <p className="text-red-600 text-sm">Something went wrong. Please try again.</p>}

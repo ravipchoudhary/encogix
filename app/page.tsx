@@ -264,7 +264,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {(projects.length > 0 ? projects : [
-              { title: "Ecommerce Platform", description: "Fashion retailer online store with Razorpay & admin panel.", category: "Ecommerce", client: "Confidential Client", technologies: "Next.js, Node.js", slug: null },
+              { title: "Ecommerce Platform", description: "Fashion retailer online store with Cashfree & admin panel.", category: "Ecommerce", client: "Confidential Client", technologies: "Next.js, Node.js", slug: null },
               { title: "CRM & Lead System", description: "Sales CRM with lead assignment and follow-up tracking.", category: "Software", client: "Confidential Client", technologies: "React, PostgreSQL", slug: null },
               { title: "Healthcare Booking App", description: "Appointment booking with SMS reminders.", category: "Healthcare", client: "HealthFirst Clinics", technologies: "React Native", slug: null },
             ]).map((item) => (

@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { IconFolderKanban, IconImage, IconArrowRight } from "../../components/Icons";
 import { projectPath } from "../../lib/slug";
+import { db as prisma } from "../../lib/mysql";
+
+export const dynamic = "force-dynamic";
 
 async function getProjects() {
   try {
-    const res = await fetch('/api/projects', { cache: "no-store" });
-    if (!res.ok) return [];
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) return [];
-    return res.json();
+    return await prisma.project.findMany({ orderBy: { id: "desc" } });
   } catch (_) {
     return [];
   }

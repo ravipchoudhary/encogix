@@ -41,7 +41,7 @@ const industries = [
     title: "Retail",
     challenges: ["Customer retention", "Inventory visibility", "Multi-channel experience management"],
     solutions: ["Ecommerce platforms", "CRM campaigns", "Inventory dashboards", "Customer analytics"],
-    stack: ["React", "Node.js", "MongoDB", "Razorpay"],
+    stack: ["React", "Node.js", "MongoDB", "Cashfree"],
     example: "Omnichannel retail storefront and CRM dashboard",
   },
   {
@@ -69,7 +69,7 @@ const industries = [
     title: "E-commerce",
     challenges: ["Conversion optimization", "Product discovery", "Order management and customer support"],
     solutions: ["Storefront development", "Cart and payment integration", "Inventory dashboards", "Customer journeys"],
-    stack: ["Next.js", "React", "Node.js", "Razorpay"],
+    stack: ["Next.js", "React", "Node.js", "Cashfree"],
     example: "Multi-category ecommerce storefront with dashboard analytics",
   },
   {

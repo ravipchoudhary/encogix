@@ -8,14 +8,14 @@ interface JobApp {
   name: string;
   email: string;
   phone: string;
-  current_company: string;
-  current_salary: string;
-  expected_salary: string;
+  currentCompany: string;
+  currentSalary: string;
+  expectedSalary: string;
   experience: string;
-  notice_period: string;
+  noticePeriod: string;
   resume: string;
   message: string;
-  created_at: string;
+  createdAt: string;
 }
 
 function authHeaders() {
@@ -81,9 +81,9 @@ export default function AdminJobApplicationsPage() {
                 <div>
                   <h3 className="font-semibold text-primary">{a.name}</h3>
                   <p className="text-sm text-slate-500">{a.email}</p>
-                  <p className="text-sm text-slate-600 mt-1">{a.experience || "—"} • Expected: {a.expected_salary || "—"}</p>
+                  <p className="text-sm text-slate-600 mt-1">{a.experience || "—"} • Expected: {a.expectedSalary || "—"}</p>
                 </div>
-                <span className="text-xs text-slate-400 shrink-0">{a.created_at ? new Date(a.created_at).toLocaleDateString() : ""}</span>
+                <span className="text-xs text-slate-400 shrink-0">{a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}</span>
               </div>
             </div>
           ))}
@@ -100,11 +100,11 @@ export default function AdminJobApplicationsPage() {
               <p><span className="font-medium text-slate-600">Name:</span> {selected.name}</p>
               <p><span className="font-medium text-slate-600">Email:</span> <a href={`mailto:${selected.email}`} className="text-secondary">{selected.email}</a></p>
               <p><span className="font-medium text-slate-600">Phone:</span> {selected.phone || "—"}</p>
-              <p><span className="font-medium text-slate-600">Current Company:</span> {selected.current_company || "—"}</p>
-              <p><span className="font-medium text-slate-600">Current Salary:</span> {selected.current_salary || "—"}</p>
-              <p><span className="font-medium text-slate-600">Expected Salary:</span> {selected.expected_salary || "—"}</p>
+              <p><span className="font-medium text-slate-600">Current Company:</span> {selected.currentCompany || "—"}</p>
+              <p><span className="font-medium text-slate-600">Current Salary:</span> {selected.currentSalary || "—"}</p>
+              <p><span className="font-medium text-slate-600">Expected Salary:</span> {selected.expectedSalary || "—"}</p>
               <p><span className="font-medium text-slate-600">Experience:</span> {selected.experience || "—"}</p>
-              <p><span className="font-medium text-slate-600">Notice Period:</span> {selected.notice_period || "—"}</p>
+              <p><span className="font-medium text-slate-600">Notice Period:</span> {selected.noticePeriod || "—"}</p>
               {selected.resume && (
                 <p>
                   <span className="font-medium text-slate-600">Resume:</span>{" "}
@@ -112,7 +112,7 @@ export default function AdminJobApplicationsPage() {
                 </p>
               )}
               <p><span className="font-medium text-slate-600">Message:</span> {selected.message || "—"}</p>
-              <p className="text-slate-500 text-xs">{selected.created_at ? new Date(selected.created_at).toLocaleString() : ""}</p>
+              <p className="text-slate-500 text-xs">{selected.createdAt ? new Date(selected.createdAt).toLocaleString() : ""}</p>
             </div>
           </div>
         </div>

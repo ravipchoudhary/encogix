@@ -1,21 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Cashfree: any;
   }
 }
 
 export default function PaymentPage() {
-  const router = useRouter();
   const [amount, setAmount] = useState('');
+  const [isInternshipPayment, setIsInternshipPayment] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  useEffect(() => {
+    const internshipPayment = new URLSearchParams(window.location.search).get('type') === 'internship';
+    setIsInternshipPayment(internshipPayment);
+    if (internshipPayment) setAmount('999');
+  }, []);
 
   const handlePayment = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -30,7 +33,7 @@ export default function PaymentPage() {
 
     try {
       // Create order on backend
-      const response = await fetch(`${apiUrl}/api/payment/create-order`, {
+      const response = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,6 +41,7 @@ export default function PaymentPage() {
         body: JSON.stringify({
           amount: parseFloat(amount),
           currency: 'INR',
+          ...(isInternshipPayment ? JSON.parse(sessionStorage.getItem('pending_internship_application') || '{}') : {}),
         }),
       });
 
@@ -47,50 +51,14 @@ export default function PaymentPage() {
         throw new Error(orderData.message || 'Failed to create order');
       }
 
-      // Initialize Razorpay checkout
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'Encogix Technology',
-        description: 'Payment for services',
-        order_id: orderData.id,
-        handler: async function (response: any) {
-          // Verify payment on backend
-          const verifyResponse = await fetch(`${apiUrl}/api/payment/verify`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
-
-          const verifyData = await verifyResponse.json();
-
-          if (verifyData.success) {
-            // Redirect to success page with payment details
-            router.push(`/payment/success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&amount=${amount}&status=success`);
-          } else {
-            // Redirect to success page with failure status
-            router.push(`/payment/success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&amount=${amount}&status=failed`);
-          }
-        },
-        prefill: {
-          name: '',
-          email: '',
-          contact: '',
-        },
-        theme: {
-          color: '#2563eb',
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      if (!window.Cashfree) throw new Error('Cashfree checkout is unavailable');
+      const cashfree = window.Cashfree({
+        mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === 'production' ? 'production' : 'sandbox',
+      });
+      await cashfree.checkout({
+        paymentSessionId: orderData.payment_session_id,
+        redirectTarget: '_self',
+      });
     } catch (error) {
       console.error('Payment error:', error);
       setMessage('Payment failed. Please try again.');
@@ -138,12 +106,13 @@ export default function PaymentPage() {
                     className="block w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-lg font-medium"
                     placeholder="0.00"
                     value={amount}
+                    readOnly={isInternshipPayment}
                     onChange={(e) => setAmount(e.target.value)}
                     min="1"
                     step="0.01"
                   />
                 </div>
-                <p className="mt-2 text-sm text-gray-500">Enter the amount you wish to pay</p>
+                <p className="mt-2 text-sm text-gray-500">{isInternshipPayment ? 'Internship application fee (fixed amount)' : 'Enter the amount you wish to pay'}</p>
               </div>
 
               {/* Payment Button */}

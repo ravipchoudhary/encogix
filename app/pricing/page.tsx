@@ -27,7 +27,7 @@ const plans = [
     name: "Ecommerce Store",
     from: "₹75,000",
     desc: "Full online store with payments",
-    features: ["Product catalog", "Cart & checkout", "Razorpay gateway", "Order management", "Inventory panel", "3 months support"],
+    features: ["Product catalog", "Cart & checkout", "Cashfree gateway", "Order management", "Inventory panel", "3 months support"],
   },
   {
     name: "Mobile App",

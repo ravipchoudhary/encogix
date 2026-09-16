@@ -29,7 +29,7 @@ const faqItems = [
   {
     question: "Can you integrate payment gateway and CRM?",
     answer:
-      "Absolutely. We integrate Razorpay, WhatsApp automation, custom CRM, lead tracking, and third-party APIs as per your workflow.",
+      "Absolutely. We integrate Cashfree, WhatsApp automation, custom CRM, lead tracking, and third-party APIs as per your workflow.",
   },
 ];
 

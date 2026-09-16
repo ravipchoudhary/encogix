@@ -9,6 +9,9 @@ import {
   IconGlobe,
 } from "../../../components/Icons";
 import { projectPath } from "../../../lib/slug";
+import { db as prisma } from "../../../lib/mysql";
+
+export const dynamic = "force-dynamic";
 
 export interface Project {
   id: number;
@@ -24,14 +27,17 @@ export interface Project {
   results: string | null;
 }
 
+type DatabaseProject = Omit<Project, "project_url"> & { projectUrl: string | null };
+
+function mapProject(project: DatabaseProject): Project {
+  return { ...project, project_url: project.projectUrl };
+}
+
 async function getProject(slug: string): Promise<Project | null> {
   try {
-    const res = await fetch(`/api/projects/${encodeURIComponent(slug)}`, { cache: "no-store" });
-    if (res.status === 404) return null;
-    if (!res.ok) return null;
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) return null;
-    return res.json();
+    const project = await prisma.project.findFirst({ where: { slug } });
+    if (!project) return null;
+    return mapProject(project as DatabaseProject);
   } catch (_) {
     return null;
   }
@@ -39,11 +45,8 @@ async function getProject(slug: string): Promise<Project | null> {
 
 async function getAllProjects(): Promise<Project[]> {
   try {
-    const res = await fetch('/api/projects', { cache: "no-store" });
-    if (!res.ok) return [];
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) return [];
-    return res.json();
+    const projects = await prisma.project.findMany({ orderBy: { id: "desc" } });
+    return projects.map((project: DatabaseProject) => mapProject(project));
   } catch (_) {
     return [];
   }

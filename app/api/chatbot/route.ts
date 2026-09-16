@@ -28,7 +28,7 @@ const KNOWLEDGE = {
   ecommerce: {
     keywords: ["ecommerce", "e-commerce", "online store", "shop", "cart", "checkout", "payment gateway", "inventory"],
     reply:
-      "Ecommerce Development includes product listing, cart, checkout, Razorpay/payment gateway, order management, admin panel & inventory. Starting from ₹75,000. Timeline: 4–8 weeks.",
+      "Ecommerce Development includes product listing, cart, checkout, Cashfree/payment gateway, order management, admin panel & inventory. Starting from ₹75,000. Timeline: 4–8 weeks.",
     hindi:
       "Ecommerce website mein product listing, cart, payment gateway, admin panel sab milta hai. ₹75,000 se start. 4-8 weeks.",
   },

@@ -37,11 +37,17 @@ services:
       - key: JWT_SECRET
         sync: false
       
-      - key: RAZORPAY_KEY_ID
+      - key: CASHFREE_APP_ID
         sync: false
       
-      - key: RAZORPAY_KEY_SECRET
+      - key: CASHFREE_SECRET_KEY
         sync: false
+
+      - key: CASHFREE_ENV
+        value: sandbox
+
+      - key: CASHFREE_RETURN_URL
+        value: https://www.encogix.com/payment/success
       
       - key: BACKEND_PORT
         value: "5000"
