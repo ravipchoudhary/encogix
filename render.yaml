@@ -44,10 +44,10 @@ services:
         sync: false
 
       - key: CASHFREE_ENV
-        value: sandbox
+        value: production
 
       - key: CASHFREE_RETURN_URL
-        value: https://www.encogix.com/payment/success
+        value: https://www.sunpay.store/payment/success
       
       - key: BACKEND_PORT
         value: "5000"
