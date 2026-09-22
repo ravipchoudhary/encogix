@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import HomeSections from "../components/HomeSections";
 import ProcessSection from "../components/ProcessSection";
+import { db } from "../lib/mysql";
 import {
   IconCode2, IconCloud, IconBriefcase, IconLayout, IconDatabase, IconBrain,
   IconQuote, IconArrowRight, IconZap, IconFolderKanban, IconMapPin, IconUsers,
@@ -15,48 +16,21 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const EXTERNAL_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-async function fetchJsonWithTimeout(url: string, options: RequestInit = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
-
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      ...options,
-    });
-
-    if (!response.ok) return null;
-    if (!(response.headers.get('content-type') || '').includes('application/json')) return null;
-    return await response.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+export const dynamic = "force-dynamic";
 
 async function getHomeData() {
   let projects: Array<{ title: string; description: string | null; category: string | null; client: string | null; technologies: string | null; slug: string | null }> = [];
   let testimonials: Array<{ name: string; company: string | null; designation: string | null; rating: number; text: string; logo?: string | null }> = [];
   try {
-    const [projectsData, testimonialsData] = await Promise.all([
-      fetchJsonWithTimeout(`${EXTERNAL_API_BASE}/api/projects`, { next: { revalidate: 60 } }),
-      fetchJsonWithTimeout(`${EXTERNAL_API_BASE}/api/testimonials`, { next: { revalidate: 60 } }),
+    const [projectRows, testimonialRows] = await Promise.all([
+      db.project.findMany({ orderBy: { id: "desc" }, take: 3 }),
+      db.testimonial.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
     ]);
-
-    if (Array.isArray(projectsData)) {
-      projects = projectsData.slice(0, 3);
-    }
-
-    if (Array.isArray(testimonialsData)) {
-      testimonials = testimonialsData;
-    }
+    projects = projectRows;
+    testimonials = testimonialRows;
   } catch (_) {}
 
   return {
-    clients: ["RetailKart", "HealthFirst", "EduLearn", "ManufactureHub", "PropTech", "FinServe"],
     projects,
     testimonials,
   };
@@ -70,7 +44,7 @@ const statsData = [
 ];
 
 export default async function HomePage() {
-  const { clients, projects, testimonials } = await getHomeData();
+  const { projects, testimonials } = await getHomeData();
   const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP || "919431607346";
 
   return (
@@ -294,30 +268,34 @@ export default async function HomePage() {
               Trusted by leaders worldwide
             </h2>
             <div className="space-y-4">
+              {testimonials.length === 0 && (
+                <div className="card border-dashed text-slate-600">
+                  <p>Client testimonials will appear here after approval.</p>
+                  <Link href="/testimonial" className="btn-primary mt-4 w-fit inline-flex items-center gap-2">
+                    Share Your Experience <IconArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
               {testimonials.map((t, i) => (
                 <div key={i} className="card card-3d block-3d">
-                  {t.logo && <img src={t.logo} alt={`${t.company || t.name} logo`} className="h-10 w-auto max-w-36 object-contain mb-3" />}
+                  {t.logo && <img src={t.logo} alt={`${t.name} logo`} className="h-10 w-auto max-w-36 object-contain mb-3" />}
                   <IconQuote className="w-8 h-8 text-secondary/40 mb-2" />
                   <p className="text-sm text-amber-500">{"★".repeat(t.rating || 5)}</p>
                   <p className="text-sm text-slate-700 mt-2">{t.text}</p>
                   <p className="mt-3 text-xs font-semibold text-slate-500">
-                    {t.name}{t.designation ? `, ${t.designation}` : ""}{t.company ? ` — ${t.company}` : ""}
+                    {t.name}{t.designation ? `, ${t.designation}` : ""}
                   </p>
                 </div>
               ))}
             </div>
           </div>
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide flex items-center gap-2">
-              <IconUsers className="w-5 h-5" /> Selected clients
-            </h3>
-            <div className="grid grid-cols-2 gap-4 text-sm text-slate-600">
-              {clients.map((client) => (
-                <div key={client} className="rounded-xl border border-slate-100 bg-white py-4 px-3 text-center shadow-card font-medium text-slate-700 card-flat-3d hover:border-secondary/20 flex items-center justify-center">
-                  {client}
-                </div>
-              ))}
-            </div>
+          <div className="card card-3d block-3d flex flex-col justify-center bg-gradient-to-br from-primary to-blue-800 text-white">
+            <p className="text-sm font-semibold uppercase tracking-wide text-blue-200">Work with our team</p>
+            <h3 className="mt-3 text-2xl font-bold">Turn your next idea into a working product.</h3>
+            <p className="mt-3 text-blue-100">Tell us what you are building and get a practical plan from our team.</p>
+            <Link href="/contact" className="btn-primary mt-6 w-fit bg-white text-primary hover:bg-blue-50">
+              Start a Conversation <IconArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
