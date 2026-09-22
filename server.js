@@ -1,3 +1,7 @@
+const forceProduction = process.argv.includes('--production');
+const forceDevelopment = process.argv.includes('--dev');
+if (forceProduction) process.env.NODE_ENV = 'production';
+if (forceDevelopment) process.env.NODE_ENV = 'development';
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
@@ -12,7 +16,10 @@ const { uniqueProjectSlug } = require('./lib/server-slug');
 const { getChatbotReply } = require('./lib/chatbot-knowledge');
 
 const hasProductionBuild = fs.existsSync(path.join(__dirname, '.next', 'BUILD_ID'));
-const dev = process.env.NODE_ENV !== 'production' || !hasProductionBuild;
+const dev = !forceProduction && process.env.NODE_ENV !== 'production';
+if (forceProduction && !hasProductionBuild) {
+  throw new Error('Production build not found. Run "npm run build" before "npm start".');
+}
 const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
 
@@ -176,6 +183,63 @@ async function main() {
       res.json(rows);
     } catch {
       res.status(500).json({ message: 'Failed to fetch testimonials' });
+    }
+  });
+
+  server.post('/api/testimonials', async (req, res) => {
+    const { name, company, designation, rating, text } = req.body || {};
+    const normalizedRating = Number(rating);
+    if (!String(name || '').trim() || !String(text || '').trim()) {
+      return res.status(400).json({ message: 'Name and testimonial are required' });
+    }
+    if (!Number.isInteger(normalizedRating) || normalizedRating < 1 || normalizedRating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+    try {
+      await prisma.testimonial.create({
+        data: {
+          name: String(name).trim(),
+          company: String(company || '').trim() || null,
+          designation: String(designation || '').trim() || null,
+          rating: normalizedRating,
+          text: String(text).trim(),
+          active: false,
+          sortOrder: 0,
+        },
+      });
+      res.status(201).json({ message: 'Testimonial submitted for review' });
+    } catch {
+      res.status(500).json({ message: 'Failed to submit testimonial' });
+    }
+  });
+
+  server.get('/api/admin/testimonials', authMiddleware, async (_req, res) => {
+    try {
+      res.json(await prisma.testimonial.findMany({ orderBy: { id: 'desc' } }));
+    } catch {
+      res.status(500).json({ message: 'Failed to fetch testimonials' });
+    }
+  });
+
+  server.put('/api/admin/testimonials/:id', authMiddleware, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const data = {};
+    if (req.body?.active !== undefined) data.active = Boolean(req.body.active);
+    if (req.body?.sortOrder !== undefined && Number.isFinite(Number(req.body.sortOrder))) data.sortOrder = Number(req.body.sortOrder);
+    try {
+      await prisma.testimonial.update({ where: { id }, data });
+      res.json({ message: 'Testimonial updated' });
+    } catch {
+      res.status(500).json({ message: 'Failed to update testimonial' });
+    }
+  });
+
+  server.delete('/api/admin/testimonials/:id', authMiddleware, async (req, res) => {
+    try {
+      await prisma.testimonial.delete({ where: { id: parseInt(req.params.id, 10) } });
+      res.json({ message: 'Testimonial deleted' });
+    } catch {
+      res.status(500).json({ message: 'Failed to delete testimonial' });
     }
   });
 
