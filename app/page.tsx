@@ -237,11 +237,15 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            {(projects.length > 0 ? projects : [
-              { title: "Ecommerce Platform", description: "Fashion retailer online store with Cashfree & admin panel.", category: "Ecommerce", client: "Confidential Client", technologies: "Next.js, Node.js", slug: null },
-              { title: "CRM & Lead System", description: "Sales CRM with lead assignment and follow-up tracking.", category: "Software", client: "Confidential Client", technologies: "React, PostgreSQL", slug: null },
-              { title: "Healthcare Booking App", description: "Appointment booking with SMS reminders.", category: "Healthcare", client: "HealthFirst Clinics", technologies: "React Native", slug: null },
-            ]).map((item) => (
+            {projects.length === 0 && (
+              <div className="card border-dashed text-slate-600 md:col-span-3">
+                <p>Our latest projects will appear here soon.</p>
+                <Link href="/contact" className="btn-primary mt-4 w-fit inline-flex items-center gap-2">
+                  Start a Project <IconArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+            {projects.map((item) => (
               <div key={item.title} className="card card-3d block-3d">
                 {item.category && <span className="chip mb-3">{item.category}</span>}
                 <h3 className="font-semibold text-primary mb-1">{item.title}</h3>
