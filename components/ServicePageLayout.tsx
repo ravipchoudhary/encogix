@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PageHero, { CTASection } from "./PageHero";
-import { FAQSchema } from "./JsonLd";
+import { BreadcrumbSchema, FAQSchema, ServiceSchema } from "./JsonLd";
 import { IconCheck, IconArrowRight, IconGlobe, IconSmartphone, IconBriefcase, IconBrain, IconBarChart3, IconShoppingBag } from "./Icons";
 import type { ServicePageData } from "../lib/services-data";
 
@@ -19,6 +19,12 @@ export default function ServicePageLayout({ service }: { service: ServicePageDat
   return (
     <>
       <FAQSchema items={service.faqs} />
+      <ServiceSchema name={service.title} description={service.intro} url={`/services/${service.slug}`} />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "/" },
+        { name: "Services", url: "/services" },
+        { name: service.title, url: `/services/${service.slug}` },
+      ]} />
       <PageHero
         chip={service.heroSubtitle}
         title={service.title}

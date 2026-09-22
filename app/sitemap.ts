@@ -1,6 +1,8 @@
 import { MetadataRoute } from "next";
+import { db } from "../lib/mysql";
+import { slugifyTitle } from "../lib/slug";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.encogix.com";
 
   const routes = [
@@ -37,14 +39,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/career",
     "/internship",
     "/contact",
+    "/testimonial",
+    "/certificate-verification",
     "/privacy-policy",
     "/terms",
   ];
 
-  return routes.map((route) => ({
+  const entries = routes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: route === "" ? "weekly" : "monthly",
     priority: route === "" ? 1 : route.startsWith("/services") ? 0.9 : 0.8,
-  }));
+  })) as MetadataRoute.Sitemap;
+
+  try {
+    const [projects, blogs] = await Promise.all([
+      db.project.findMany({ orderBy: { id: "desc" } }),
+      db.blog.findMany({ orderBy: { createdAt: "desc" } }),
+    ]);
+    entries.push(...(projects as { slug: string | null }[]).filter((project) => project.slug).map((project) => ({
+      url: `${baseUrl}/portfolio/${project.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })));
+    entries.push(...(blogs as { id: number; title: string | null; createdAt: Date | null }[]).map((blog) => ({
+      url: `${baseUrl}/blog/${slugifyTitle(blog.title || `blog-${blog.id}`)}`,
+      lastModified: blog.createdAt ? new Date(blog.createdAt) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })));
+  } catch {}
+
+  return entries;
 }

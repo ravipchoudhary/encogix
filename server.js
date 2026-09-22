@@ -197,6 +197,26 @@ async function main() {
     }
   });
 
+  server.get('/api/certificates/verify', async (req, res) => {
+    const certificateNumber = String(req.query.number || '').trim();
+    if (!certificateNumber) return res.status(400).json({ valid: false, message: 'Certificate number is required' });
+    try {
+      const certificate = await prisma.certificate.findUnique({ where: { certificateNumber } });
+      if (!certificate || !certificate.active) return res.json({ valid: false, message: 'Certificate not found or inactive' });
+      res.json({
+        valid: true,
+        certificate_number: certificate.certificateNumber,
+        candidate_name: certificate.candidateName,
+        course: certificate.course,
+        issue_date: certificate.issueDate,
+        details: certificate.details,
+      });
+    } catch (error) {
+      console.error('Certificate verification failed:', error);
+      res.status(500).json({ valid: false, message: 'Certificate verification failed' });
+    }
+  });
+
   server.post('/api/testimonials', upload.single('logo'), async (req, res) => {
     const { name, company, designation, rating, text } = req.body || {};
     const logoPath = req.file ? '/uploads/' + req.file.filename : null;
@@ -254,6 +274,45 @@ async function main() {
       res.json({ message: 'Testimonial deleted' });
     } catch {
       res.status(500).json({ message: 'Failed to delete testimonial' });
+    }
+  });
+
+  server.get('/api/admin/certificates', authMiddleware, async (_req, res) => {
+    try {
+      res.json(await prisma.certificate.findMany({ orderBy: { id: 'desc' } }));
+    } catch {
+      res.status(500).json({ message: 'Failed to fetch certificates' });
+    }
+  });
+
+  server.post('/api/admin/certificates', authMiddleware, async (req, res) => {
+    const certificateNumber = String(req.body?.certificate_number || '').trim().toUpperCase();
+    const candidateName = String(req.body?.candidate_name || '').trim();
+    if (!certificateNumber || !candidateName) return res.status(400).json({ message: 'Certificate number and candidate name are required' });
+    try {
+      const certificate = await prisma.certificate.create({
+        data: {
+          certificateNumber,
+          candidateName,
+          course: String(req.body?.course || '').trim() || null,
+          issueDate: req.body?.issue_date || null,
+          details: String(req.body?.details || '').trim() || null,
+          active: true,
+        },
+      });
+      res.status(201).json(certificate);
+    } catch (error) {
+      console.error('Certificate creation failed:', error);
+      res.status(500).json({ message: 'Failed to create certificate' });
+    }
+  });
+
+  server.delete('/api/admin/certificates/:id', authMiddleware, async (req, res) => {
+    try {
+      await prisma.certificate.delete({ where: { id: parseInt(req.params.id, 10) } });
+      res.json({ message: 'Certificate deleted' });
+    } catch {
+      res.status(500).json({ message: 'Failed to delete certificate' });
     }
   });
 

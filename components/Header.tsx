@@ -28,6 +28,7 @@ const navItems = [
       { href: "/career", label: "Careers" },
       { href: "/internship", label: "Internship" },
       { href: "/payment", label: "Payment" },
+      { href: "/certificate-verification", label: "Certificate Verification" },
     ],
   },
   { href: "/contact", label: "Contact" },

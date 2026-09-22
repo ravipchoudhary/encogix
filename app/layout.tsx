@@ -10,6 +10,7 @@ import Script from "next/script";
 
 const fontSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.encogix.com";
+const socialImage = `${siteUrl.replace(/\/$/, "")}/logo.png`;
 
 export const metadata: Metadata = {
   title: {
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
   description:
     "Web and software development company in Noida for websites, ecommerce, apps, CRM, AI and SEO. Get a free consultation from Encogix.",
   metadataBase: new URL(siteUrl),
+  alternates: { canonical: siteUrl },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
   icons: { icon: "/logo.png", apple: "/logo.png" },
   openGraph: {
     type: "website",
@@ -28,8 +31,9 @@ export const metadata: Metadata = {
     title: "Encogix Technology | IT Company in Noida",
     description:
       "Website development, mobile apps, custom software & digital marketing in Noida & Delhi NCR.",
+    images: [{ url: socialImage, width: 512, height: 512, alt: "Encogix Technology" }],
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", title: "Encogix Technology | IT Company in Noida", description: "Website development, software, apps, CRM, AI and SEO services in Noida and Delhi NCR.", images: [socialImage] },
   keywords: [
     "website development company Noida",
     "software development Greater Noida",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PageHero, { CTASection } from "./PageHero";
-import { FAQSchema } from "./JsonLd";
+import { BreadcrumbSchema, FAQSchema } from "./JsonLd";
 import { ContactLeadForm } from "./ContactLeadForm";
 import { IconArrowRight, IconCheck } from "./Icons";
 
@@ -40,6 +40,11 @@ export default function StructuredPage({
   return (
     <>
       <FAQSchema items={faqs} />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "/" },
+        ...breadcrumb.map((item) => ({ name: item.label, url: item.href })),
+        { name: title, url: "" },
+      ]} />
 
       <PageHero chip={chip} title={title} subtitle={subtitle}>
         {quickActions.length > 0 ? (
