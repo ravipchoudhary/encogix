@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const next = require('next');
 const cors = require('cors');
-const { db: prisma } = require('./lib/mysql');
+const { db: prisma, pool } = require('./lib/mysql');
 const { authMiddleware, employeeAuthMiddleware, signAdminToken, signEmployeeToken } = require('./lib/server-auth');
 const { uniqueProjectSlug } = require('./lib/server-slug');
 const { getChatbotReply } = require('./lib/chatbot-knowledge');
@@ -47,6 +47,16 @@ async function getInternshipFee() {
 
 function generateRegistrationId() {
   return `EX-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+}
+
+async function ensureTestimonialLogoColumn() {
+  const [columns] = await pool.query(
+    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = \'testimonials\''
+  );
+  if (!columns.some((column) => column.COLUMN_NAME === 'logo')) {
+    await pool.query('ALTER TABLE testimonials ADD COLUMN logo VARCHAR(500) NULL');
+    console.log('Added missing testimonials.logo column');
+  }
 }
 
 const uploadDir = path.join(__dirname, 'uploads');
@@ -97,6 +107,7 @@ async function main() {
   }
 
   await prisma.$connect();
+  await ensureTestimonialLogoColumn();
   await seedDefaultAdmin();
 
   await app.prepare();
@@ -210,7 +221,8 @@ async function main() {
         },
       });
       res.status(201).json({ message: 'Testimonial submitted for review' });
-    } catch {
+    } catch (error) {
+      console.error('Failed to submit testimonial:', error);
       res.status(500).json({ message: 'Failed to submit testimonial' });
     }
   });

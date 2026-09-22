@@ -18,10 +18,10 @@ services:
         value: production
 
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://www.sunpay.store
+        value: https://www.encogix.com
 
       - key: NEXT_PUBLIC_API_URL
-        value: https://www.sunpay.store
+        value: https://www.encogix.com
 
       - key: NEXT_PUBLIC_CASHFREE_ENV
         value: production
@@ -50,7 +50,7 @@ services:
         value: production
 
       - key: CASHFREE_RETURN_URL
-        value: https://www.sunpay.store/payment/success
+        value: https://www.encogix.com/payment/success
       
       - key: BACKEND_PORT
         value: "5000"
