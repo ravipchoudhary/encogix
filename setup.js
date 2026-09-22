@@ -35,6 +35,13 @@ async function main() {
   for (const [column, statement] of internshipMigrations) {
     if (!existingInternshipColumns.has(column)) await pool.query(statement);
   }
+  const [testimonialColumns] = await pool.query(
+    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = \'testimonials\''
+  );
+  const existingTestimonialColumns = new Set(testimonialColumns.map((column) => column.COLUMN_NAME));
+  if (!existingTestimonialColumns.has('logo')) {
+    await pool.query('ALTER TABLE testimonials ADD COLUMN logo VARCHAR(500) NULL');
+  }
   await pool.end();
   console.log('MySQL schema is ready');
 }

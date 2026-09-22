@@ -11,6 +11,7 @@ interface Testimonial {
   designation: string | null;
   rating: number;
   text: string;
+  logo: string | null;
   active: boolean;
   sortOrder: number;
 }
@@ -82,6 +83,7 @@ export default function AdminTestimonialsPage() {
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
               <th className="text-left py-3 px-3 font-medium">Name</th>
+              <th className="text-left py-3 px-3 font-medium">Logo</th>
               <th className="text-left py-3 px-3 font-medium">Company / Role</th>
               <th className="text-left py-3 px-3 font-medium">Rating</th>
               <th className="text-left py-3 px-3 font-medium">Text</th>
@@ -94,6 +96,9 @@ export default function AdminTestimonialsPage() {
             {testimonials.map((item) => (
               <tr key={item.id} className="border-b border-slate-100 align-top">
                 <td className="py-3 px-3 font-medium">{item.name}</td>
+                <td className="py-3 px-3">
+                  {item.logo ? <a href={item.logo} target="_blank" rel="noreferrer" className="text-secondary hover:underline">View logo</a> : "—"}
+                </td>
                 <td className="py-3 px-3 text-slate-600">
                   {item.company || "—"}
                   {item.designation ? ` · ${item.designation}` : ""}

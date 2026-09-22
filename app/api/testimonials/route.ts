@@ -9,6 +9,7 @@ function mapTestimonial(t: {
   designation: string | null;
   rating: number;
   text: string;
+  logo: string | null;
   active: boolean;
   sortOrder: number;
 }) {
@@ -19,6 +20,7 @@ function mapTestimonial(t: {
     designation: t.designation,
     rating: t.rating,
     text: t.text,
+    logo: t.logo,
     sort_order: t.sortOrder,
   };
 }

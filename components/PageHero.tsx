@@ -26,7 +26,7 @@ export function CTASection({ title, desc }: { title?: string; desc?: string }) {
   return (
     <section className="section-padding">
       <div className="container-page">
-        <div className="glass-card block-3d rounded-3xl bg-gradient-to-br from-secondary/95 via-sky-700 to-accent p-8 md:p-12 text-white text-center relative overflow-hidden shadow-glow shadow-secondary/30">
+        <div className="block-3d rounded-3xl bg-gradient-to-br from-secondary/95 via-sky-700 to-accent p-8 md:p-12 text-white text-center relative overflow-hidden shadow-glow shadow-secondary/30">
           <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold">{title || "Ready to start your project?"}</h2>

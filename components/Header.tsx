@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { SERVICE_LINKS } from "../lib/site-config";
+import { CAPABILITY_LINKS, SERVICE_LINKS } from "../lib/site-config";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -11,6 +11,11 @@ const navItems = [
     label: "Services",
     href: "/services",
     children: SERVICE_LINKS,
+  },
+  {
+    label: "Capabilities",
+    href: "/services",
+    children: CAPABILITY_LINKS,
   },
   {
     label: "Company",

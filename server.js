@@ -186,8 +186,9 @@ async function main() {
     }
   });
 
-  server.post('/api/testimonials', async (req, res) => {
+  server.post('/api/testimonials', upload.single('logo'), async (req, res) => {
     const { name, company, designation, rating, text } = req.body || {};
+    const logoPath = req.file ? '/uploads/' + req.file.filename : null;
     const normalizedRating = Number(rating);
     if (!String(name || '').trim() || !String(text || '').trim()) {
       return res.status(400).json({ message: 'Name and testimonial are required' });
@@ -203,6 +204,7 @@ async function main() {
           designation: String(designation || '').trim() || null,
           rating: normalizedRating,
           text: String(text).trim(),
+          logo: logoPath,
           active: false,
           sortOrder: 0,
         },

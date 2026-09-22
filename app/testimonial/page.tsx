@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function TestimonialPage() {
   const [form, setForm] = useState({ name: "", company: "", designation: "", rating: "5", text: "" });
+  const [logo, setLogo] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
   const handleChange = (field: string, value: string) => {
@@ -15,20 +16,18 @@ export default function TestimonialPage() {
     setStatus("sending");
 
     try {
-      const res = await fetch("/api/testimonials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          company: form.company,
-          designation: form.designation,
-          rating: Number(form.rating),
-          text: form.text,
-        }),
-      });
+      const data = new FormData();
+      data.append("name", form.name);
+      data.append("company", form.company);
+      data.append("designation", form.designation);
+      data.append("rating", form.rating);
+      data.append("text", form.text);
+      if (logo) data.append("logo", logo);
+      const res = await fetch("/api/testimonials", { method: "POST", body: data });
       if (!res.ok) throw new Error("Submission failed");
       setStatus("success");
       setForm({ name: "", company: "", designation: "", rating: "5", text: "" });
+      setLogo(null);
     } catch {
       setStatus("error");
     }
@@ -99,6 +98,16 @@ export default function TestimonialPage() {
               onChange={(e) => handleChange("text", e.target.value)}
               className="input-field"
               placeholder="Write your review here"
+            />
+          </div>
+
+          <div>
+            <label className="label-field">Company Logo (optional)</label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              onChange={(e) => setLogo(e.target.files?.[0] || null)}
+              className="file-input"
             />
           </div>
 

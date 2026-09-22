@@ -39,7 +39,7 @@ async function fetchJsonWithTimeout(url: string, options: RequestInit = {}) {
 
 async function getHomeData() {
   let projects: Array<{ title: string; description: string | null; category: string | null; client: string | null; technologies: string | null; slug: string | null }> = [];
-  let testimonials: Array<{ name: string; company: string | null; designation: string | null; rating: number; text: string }> = [];
+  let testimonials: Array<{ name: string; company: string | null; designation: string | null; rating: number; text: string; logo?: string | null }> = [];
   try {
     const [projectsData, testimonialsData] = await Promise.all([
       fetchJsonWithTimeout(`${EXTERNAL_API_BASE}/api/projects`, { next: { revalidate: 60 } }),
@@ -294,11 +294,9 @@ export default async function HomePage() {
               Trusted by leaders worldwide
             </h2>
             <div className="space-y-4">
-              {(testimonials.length > 0 ? testimonials : [
-                { text: "Encogix built our ecommerce site on time. Sales increased significantly after launch.", name: "Rahul Sharma", company: "RetailKart India", designation: "Founder", rating: 5 },
-                { text: "Professional team, clear communication, and strong SEO results in Noida.", name: "Priya Mehta", company: "Confidential Client", designation: "Operations Head", rating: 5 },
-              ]).map((t, i) => (
+              {testimonials.map((t, i) => (
                 <div key={i} className="card card-3d block-3d">
+                  {t.logo && <img src={t.logo} alt={`${t.company || t.name} logo`} className="h-10 w-auto max-w-36 object-contain mb-3" />}
                   <IconQuote className="w-8 h-8 text-secondary/40 mb-2" />
                   <p className="text-sm text-amber-500">{"★".repeat(t.rating || 5)}</p>
                   <p className="text-sm text-slate-700 mt-2">{t.text}</p>
