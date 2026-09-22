@@ -17,7 +17,12 @@ export default function PaymentPage() {
   useEffect(() => {
     const internshipPayment = new URLSearchParams(window.location.search).get('type') === 'internship';
     setIsInternshipPayment(internshipPayment);
-    if (internshipPayment) setAmount('999');
+    if (internshipPayment) {
+      fetch('/api/internship-payment-settings')
+        .then((response) => response.json())
+        .then((data) => setAmount(String(Number(data.amount) || 999)))
+        .catch(() => setAmount('999'));
+    }
   }, []);
 
   const handlePayment = async () => {
@@ -134,7 +139,7 @@ export default function PaymentPage() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Pay ₹{amount || '0.00'}</span>
+                    <span>{isInternshipPayment ? 'Continue for Registration' : `Pay ₹${amount || '0.00'}`}</span>
                   </div>
                 )}
               </button>

@@ -8,7 +8,7 @@ services:
     # Don't use rootDir - we need to handle monorepo structure manually
     # rootDir: backend
     
-    buildCommand: "npm ci && npm run build"
+    buildCommand: "npm ci --include=optional && npm run build"
     
     # Start command  
     startCommand: "npm start"
@@ -23,6 +23,15 @@ services:
     # Environment variables
     envVars:
       - key: NODE_ENV
+        value: production
+
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://www.sunpay.store
+
+      - key: NEXT_PUBLIC_API_URL
+        value: https://www.sunpay.store
+
+      - key: NEXT_PUBLIC_CASHFREE_ENV
         value: production
       
       - key: MYSQL_URL

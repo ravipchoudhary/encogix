@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin/leads", label: "Leads" },
   { href: "/admin/job-applications", label: "Job Applications" },
   { href: "/admin/internship-applications", label: "Internship Applications" },
+  { href: "/admin/internship-settings", label: "Internship Payment" },
   { href: "/admin/jobs", label: "Jobs" },
   { href: "/admin/blogs", label: "Blogs" },
   { href: "/admin/testimonials", label: "Testimonials" },

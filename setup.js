@@ -21,6 +21,20 @@ async function main() {
   for (const [column, statement] of contactMigrations) {
     if (!existingColumns.has(column)) await pool.query(statement);
   }
+  const [internshipColumns] = await pool.query(
+    'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = \'internship_applications\''
+  );
+  const existingInternshipColumns = new Set(internshipColumns.map((column) => column.COLUMN_NAME));
+  const internshipMigrations = [
+    ['registration_id', 'ALTER TABLE internship_applications ADD COLUMN registration_id VARCHAR(32) UNIQUE'],
+    ['payment_amount', 'ALTER TABLE internship_applications ADD COLUMN payment_amount DECIMAL(10,2) NULL'],
+    ['payment_status', 'ALTER TABLE internship_applications ADD COLUMN payment_status VARCHAR(32) NOT NULL DEFAULT \'pending\''],
+    ['payment_id', 'ALTER TABLE internship_applications ADD COLUMN payment_id VARCHAR(191) NULL'],
+    ['order_id', 'ALTER TABLE internship_applications ADD COLUMN order_id VARCHAR(191) NULL'],
+  ];
+  for (const [column, statement] of internshipMigrations) {
+    if (!existingInternshipColumns.has(column)) await pool.query(statement);
+  }
   await pool.end();
   console.log('MySQL schema is ready');
 }

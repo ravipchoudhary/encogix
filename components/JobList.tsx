@@ -36,7 +36,19 @@ export default function JobList() {
     <>
       <div className="space-y-4">
         {jobs.map((job) => (
-          <div key={job.id} className="card card-3d block-3d flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div
+            key={job.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => setSelected(job)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setSelected(job);
+              }
+            }}
+            className="card card-3d block-3d flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary/50"
+          >
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0 text-secondary">
                 <IconBriefcase className="w-5 h-5" />
@@ -50,8 +62,8 @@ export default function JobList() {
               <p className="text-sm text-slate-600 mt-2 line-clamp-2">{job.description}</p>
             </div>
             </div>
-            <button onClick={() => setSelected(job)} className="btn-primary shrink-0 inline-flex items-center gap-2">
-              Apply Now <IconArrowRight className="w-4 h-4" />
+            <button onClick={(event) => { event.stopPropagation(); setSelected(job); }} className="btn-primary shrink-0 inline-flex items-center gap-2">
+              View &amp; Apply <IconArrowRight className="w-4 h-4" />
             </button>
           </div>
         ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconGraduationCap, IconSend } from "../../components/Icons";
 
@@ -41,6 +41,14 @@ export default function InternshipPage() {
     college: "", course: "", message: "",
   });
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "err">("idle");
+  const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/internship-payment-settings")
+      .then((response) => response.json())
+      .then((data) => setPaymentAmount(Number(data.amount) || 999))
+      .catch(() => setPaymentAmount(999));
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +66,7 @@ export default function InternshipPage() {
         course: form.course,
         message: form.message,
       }));
-      router.push("/payment?type=internship&amount=999");
+      router.push("/payment?type=internship");
     } catch {
       setStatus("err");
     }
@@ -175,7 +183,7 @@ export default function InternshipPage() {
               />
             </div>
             <button type="submit" disabled={status === "sending"} className="btn-primary">
-              {status === "sending" ? "Opening payment…" : "Apply Now - Pay ₹999"}
+              {status === "sending" ? "Opening payment…" : `Continue for Registration${paymentAmount ? ` - ₹${paymentAmount}` : ""}`}
             </button>
             {status === "ok" && <p className="text-green-600 text-sm">Application submitted successfully.</p>}
             {status === "err" && <p className="text-red-600 text-sm">Something went wrong. Please try again.</p>}

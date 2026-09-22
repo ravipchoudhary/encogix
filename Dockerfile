@@ -14,7 +14,7 @@ COPY lib/ ./lib/
 COPY server.js .
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --include=optional
 
 # Build Next.js frontend
 RUN npm run build

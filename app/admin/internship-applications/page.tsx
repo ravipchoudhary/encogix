@@ -14,6 +14,9 @@ interface InternshipApp {
   resume: string;
   message: string;
   createdAt: string;
+  registrationId?: string;
+  paymentAmount?: number;
+  paymentStatus?: string;
 }
 
 function authHeaders() {
@@ -80,6 +83,7 @@ export default function AdminInternshipApplicationsPage() {
                   <h3 className="font-semibold text-primary">{a.name}</h3>
                   <p className="text-sm text-slate-500">{a.email}</p>
                   <p className="text-sm text-slate-600 mt-1">{a.internshipType || "—"} • {a.college || "—"}</p>
+                  <p className="text-xs text-slate-500 mt-1">Registration: {a.registrationId || "Pending"} • Paid: ₹{a.paymentAmount ?? "—"} ({a.paymentStatus || "pending"})</p>
                 </div>
                 <span className="text-xs text-slate-400 shrink-0">{a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}</span>
               </div>
@@ -108,6 +112,8 @@ export default function AdminInternshipApplicationsPage() {
                 </p>
               )}
               <p><span className="font-medium text-slate-600">Message:</span> {selected.message || "—"}</p>
+              <p><span className="font-medium text-slate-600">Registration ID:</span> {selected.registrationId || "Pending"}</p>
+              <p><span className="font-medium text-slate-600">Actual Payment:</span> ₹{selected.paymentAmount ?? "—"} ({selected.paymentStatus || "pending"})</p>
               <p className="text-slate-500 text-xs">{selected.createdAt ? new Date(selected.createdAt).toLocaleString() : ""}</p>
             </div>
           </div>

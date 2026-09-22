@@ -9,6 +9,7 @@ type PaymentDetails = {
   order_id: string;
   amount: string;
   status: 'success' | 'failed' | 'pending';
+  registration_id?: string;
 };
 
 export default function PaymentSuccessContent() {
@@ -38,15 +39,22 @@ export default function PaymentSuccessContent() {
       if (typeof window === 'undefined') return;
       const pending = sessionStorage.getItem('pending_internship_application');
       if (!pending) return;
+      const application = JSON.parse(pending);
+      const payment = JSON.parse(sessionStorage.getItem('completed_cashfree_payment') || '{}');
       fetch('/api/internships/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: pending,
+        body: JSON.stringify({ ...application, ...payment }),
       })
         .then((response) => {
           if (!response.ok) throw new Error('Application submission failed');
+          return response.json();
+        })
+        .then((result) => {
           sessionStorage.removeItem('pending_internship_application');
-          setApplicationMessage('Your internship application has been submitted successfully.');
+          sessionStorage.removeItem('completed_cashfree_payment');
+          setDetails((current) => ({ ...current, registration_id: result.registration_id || '' }));
+          setApplicationMessage(`Your internship application has been submitted successfully. Registration ID: ${result.registration_id || 'Pending'}`);
         })
         .catch(() => setApplicationMessage('Payment succeeded, but application submission needs to be retried.'));
     };
@@ -65,7 +73,15 @@ export default function PaymentSuccessContent() {
             amount: String(verification.amount || current.amount),
             status: verification.success ? 'success' : 'failed',
           }));
-          if (verification.success) submitPendingApplication();
+          if (verification.success) {
+            sessionStorage.setItem('completed_cashfree_payment', JSON.stringify({
+              payment_status: 'paid',
+              payment_id: verification.payment_id || paymentId || '',
+              order_id: verification.order_id || orderId,
+              payment_amount: verification.amount || amount || '',
+            }));
+            submitPendingApplication();
+          }
         })
         .catch(() => setDetails((current) => ({ ...current, status: 'failed' })));
     } else if (status === 'success') {
@@ -90,6 +106,13 @@ export default function PaymentSuccessContent() {
               ₹{formattedAmount}
             </div>
           </div>
+
+          {details.registration_id && (
+            <div className="text-center bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+              <p className="text-emerald-700 text-sm mb-2">Registration ID</p>
+              <p className="text-2xl font-bold tracking-wider text-emerald-900">{details.registration_id}</p>
+            </div>
+          )}
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

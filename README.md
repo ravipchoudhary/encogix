@@ -51,9 +51,20 @@ Open http://localhost:8000
 **Important:** Deploy with `node server.js` (not static export). The Express server serves both `/api/*` routes and Next.js pages.
 
 ```bash
+npm ci --include=optional
 npm run build
 npm run start
 ```
+
+If a server reports `Found lockfile missing swc dependencies`, replace the existing install before building:
+
+```bash
+rm -rf node_modules .next
+npm ci --include=optional
+npm run build
+```
+
+Do not run `next build` with a partially installed `node_modules`; Next.js may try to repair the lockfile through Yarn, which is not required for this project.
 
 Set production env:
 

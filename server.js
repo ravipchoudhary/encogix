@@ -24,6 +24,23 @@ const CASHFREE_API_URL = CASHFREE_ENV === 'production'
   ? 'https://api.cashfree.com/pg'
   : 'https://sandbox.cashfree.com/pg';
 const CASHFREE_API_VERSION = '2026-01-01';
+const DEFAULT_INTERNSHIP_FEE = 999;
+
+async function getInternshipFee() {
+  const row = await prisma.chatbotSetting.findUnique({ where: { id: 1 } });
+  if (!row?.data) return DEFAULT_INTERNSHIP_FEE;
+  try {
+    const settings = JSON.parse(row.data);
+    const fee = Number(settings.internshipPaymentAmount);
+    return Number.isFinite(fee) && fee > 0 ? Math.round(fee * 100) / 100 : DEFAULT_INTERNSHIP_FEE;
+  } catch {
+    return DEFAULT_INTERNSHIP_FEE;
+  }
+}
+
+function generateRegistrationId() {
+  return `EX-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+}
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -42,14 +59,25 @@ function toDateOnly(d = new Date()) {
 }
 
 async function seedDefaultAdmin() {
-  const count = await prisma.admin.count();
-  if (count === 0) {
-    const u = process.env.ADMIN_USERNAME || 'admin';
-    const p = process.env.ADMIN_PASSWORD || 'admin123';
+  const u = process.env.ADMIN_USERNAME || 'admin';
+  const p = process.env.ADMIN_PASSWORD || 'admin123';
+  const existing = await prisma.admin.findUnique({ where: { username: u } });
+
+  if (!existing) {
     await prisma.admin.create({
       data: { username: u, password: bcrypt.hashSync(p, 10), active: true },
     });
     console.log('Default admin created: username=' + u);
+    return;
+  }
+
+  const passwordMatches = await bcrypt.compare(p, existing.password).catch(() => false);
+  if (!passwordMatches) {
+    await prisma.admin.update({
+      where: { id: existing.id },
+      data: { password: bcrypt.hashSync(p, 10), active: true },
+    });
+    console.log('Admin password synced with environment config: username=' + u);
   }
 }
 
@@ -249,7 +277,7 @@ async function main() {
     const body = req.body;
     const resumePath = req.file ? '/uploads/' + req.file.filename : null;
     try {
-      await prisma.internshipApplication.create({
+      const application = await prisma.internshipApplication.create({
         data: {
           name: body.name,
           email: body.email,
@@ -259,11 +287,53 @@ async function main() {
           course: body.course || '',
           resume: resumePath,
           message: body.message || '',
+          registrationId: generateRegistrationId(),
+          paymentAmount: body.payment_amount ? Number(body.payment_amount) : null,
+          paymentStatus: body.payment_status === 'paid' ? 'paid' : 'pending',
+          paymentId: body.payment_id || null,
+          orderId: body.order_id || null,
         },
       });
-      res.status(201).json({ message: 'Internship application submitted successfully' });
+      res.status(201).json({ message: 'Internship application submitted successfully', registration_id: application.registrationId });
     } catch {
       res.status(500).json({ message: 'Failed to submit internship application' });
+    }
+  });
+
+  server.get('/api/internship-payment-settings', async (_req, res) => {
+    try {
+      res.json({ amount: await getInternshipFee() });
+    } catch {
+      res.status(500).json({ message: 'Failed to fetch internship payment settings' });
+    }
+  });
+
+  server.get('/api/admin/internship-payment-settings', authMiddleware, async (_req, res) => {
+    try {
+      res.json({ amount: await getInternshipFee() });
+    } catch {
+      res.status(500).json({ message: 'Failed to fetch internship payment settings' });
+    }
+  });
+
+  server.post('/api/admin/internship-payment-settings', authMiddleware, async (req, res) => {
+    const amount = Number(req.body?.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ message: 'Enter a valid payment amount' });
+    try {
+      const row = await prisma.chatbotSetting.findUnique({ where: { id: 1 } });
+      let settings = {};
+      if (row?.data) {
+        try { settings = JSON.parse(row.data) || {}; } catch {}
+      }
+      settings.internshipPaymentAmount = Math.round(amount * 100) / 100;
+      await prisma.chatbotSetting.upsert({
+        where: { id: 1 },
+        update: { data: JSON.stringify(settings) },
+        create: { id: 1, data: JSON.stringify(settings) },
+      });
+      res.json({ amount: settings.internshipPaymentAmount, message: 'Internship payment updated' });
+    } catch {
+      res.status(500).json({ message: 'Failed to update internship payment' });
     }
   });
 
@@ -1208,12 +1278,14 @@ async function main() {
     if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
       return res.status(503).json({ message: 'Cashfree payment is not configured' });
     }
-    if (!amount || amount <= 0) return res.status(400).json({ message: 'Valid amount is required' });
+    const isInternshipPayment = Boolean(req.body?.internship_type || req.body?.college || req.body?.course);
+    const paymentAmount = isInternshipPayment ? await getInternshipFee() : Number(amount);
+    if (!paymentAmount || paymentAmount <= 0) return res.status(400).json({ message: 'Valid amount is required' });
     try {
       const orderId = `encogix_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
       const configuredReturnUrl = process.env.CASHFREE_RETURN_URL || '';
       const returnUrl = /^https:\/\//i.test(configuredReturnUrl)
-        ? `${configuredReturnUrl}${configuredReturnUrl.includes('?') ? '&' : '?'}provider=cashfree&amount=${encodeURIComponent(amount)}&order_id=${encodeURIComponent(orderId)}`
+        ? `${configuredReturnUrl}${configuredReturnUrl.includes('?') ? '&' : '?'}provider=cashfree&amount=${encodeURIComponent(paymentAmount)}&order_id=${encodeURIComponent(orderId)}`
         : null;
       const response = await fetch(`${CASHFREE_API_URL}/orders`, {
         method: 'POST',
@@ -1227,7 +1299,7 @@ async function main() {
         },
         body: JSON.stringify({
           order_id: orderId,
-          order_amount: Number(amount),
+          order_amount: paymentAmount,
           order_currency: currency,
           customer_details: {
             customer_id: `customer_${Date.now()}`,
