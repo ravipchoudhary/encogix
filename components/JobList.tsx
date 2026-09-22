@@ -15,6 +15,7 @@ interface Job {
 export default function JobList() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selected, setSelected] = useState<Job | null>(null);
+  const [applicationJob, setApplicationJob] = useState<Job | null>(null);
 
   useEffect(() => {
     fetch("/api/jobs")
@@ -63,13 +64,39 @@ export default function JobList() {
             </div>
             </div>
             <button onClick={(event) => { event.stopPropagation(); setSelected(job); }} className="btn-primary shrink-0 inline-flex items-center gap-2">
-              View &amp; Apply <IconArrowRight className="w-4 h-4" />
+              View Details <IconArrowRight className="w-4 h-4" />
             </button>
           </div>
         ))}
       </div>
       {selected && (
-        <JobApplyModal job={selected} onClose={() => setSelected(null)} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setSelected(null)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h2 className="text-2xl font-semibold text-primary">{selected.title}</h2>
+                <p className="text-sm text-slate-500 mt-2">
+                  {selected.location || "Location flexible"}
+                  {selected.experience ? ` • ${selected.experience}` : ""}
+                </p>
+              </div>
+              <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-700" aria-label="Close job details">✕</button>
+            </div>
+            <div className="border-t border-slate-200 pt-5">
+              <h3 className="font-semibold text-primary mb-2">Job Details</h3>
+              <p className="text-slate-600 whitespace-pre-line leading-relaxed">{selected.description || "Details will be shared during the interview process."}</p>
+            </div>
+            <div className="flex flex-col-reverse sm:flex-row gap-3 mt-7">
+              <button onClick={() => setSelected(null)} className="btn-outline">Close</button>
+              <button onClick={() => { setApplicationJob(selected); setSelected(null); }} className="btn-primary inline-flex items-center justify-center gap-2">
+                Apply Now <IconArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {applicationJob && (
+        <JobApplyModal job={applicationJob} onClose={() => setApplicationJob(null)} />
       )}
     </>
   );
